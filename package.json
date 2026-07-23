@@ -7,6 +7,7 @@
     "build": "pnpm --recursive run build",
     "typecheck": "pnpm --recursive run typecheck",
     "dev:aetheris": "pnpm --filter wallpaper-engine-aetheris dev",
-    "build:aetheris": "pnpm --filter wallpaper-engine-aetheris build"
+    "build:aetheris": "pnpm --filter wallpaper-engine-aetheris build",
+    "generate:preview": "node scripts/generate_preview.js"
   }
 }

@@ -1,9 +1,13 @@
-import { AppSettings } from '../config/settings';
+import { AppSettings, ColorRGB } from '../config/settings';
 import { AudioMetrics } from '../audio/AudioAnalyzer';
 import { MouseState } from './ParticleSystem';
 
 export class BackgroundRenderer {
   private time = 0;
+  private cachedPrimaryStr = '';
+  private cachedSecondaryStr = '';
+  private cachedPrimary: ColorRGB = { r: 0, g: 0, b: 0 };
+  private cachedSecondary: ColorRGB = { r: 0, g: 0, b: 0 };
 
   public render(
     ctx: CanvasRenderingContext2D,
@@ -15,6 +19,7 @@ export class BackgroundRenderer {
     mouse: MouseState
   ): void {
     this.time += deltaTimeSec;
+    this.updateColorCache(settings.primaryColor, settings.secondaryColor);
 
     // 1. Draw Theme Background
     switch (settings.schemeType) {
@@ -35,13 +40,31 @@ export class BackgroundRenderer {
 
     // 2. Draw Interactive Mouse Glow
     if (mouse.active) {
-      this.renderMouseGlow(ctx, mouse, settings);
+      this.renderMouseGlow(ctx, mouse);
     }
 
     // 3. Draw Audio Visualizer Overlay
     if (settings.visualizerStyle !== 'off') {
       this.renderAudioVisualizer(ctx, width, height, settings, audio);
     }
+  }
+
+  private updateColorCache(primary: ColorRGB, secondary: ColorRGB): void {
+    if (
+      this.cachedPrimary.r === primary.r &&
+      this.cachedPrimary.g === primary.g &&
+      this.cachedPrimary.b === primary.b &&
+      this.cachedSecondary.r === secondary.r &&
+      this.cachedSecondary.g === secondary.g &&
+      this.cachedSecondary.b === secondary.b
+    ) {
+      return;
+    }
+
+    this.cachedPrimary = { ...primary };
+    this.cachedSecondary = { ...secondary };
+    this.cachedPrimaryStr = `${primary.r}, ${primary.g}, ${primary.b}`;
+    this.cachedSecondaryStr = `${secondary.r}, ${secondary.g}, ${secondary.b}`;
   }
 
   private renderCosmicTheme(
@@ -51,8 +74,6 @@ export class BackgroundRenderer {
     settings: AppSettings,
     audio: AudioMetrics
   ): void {
-    const p = settings.primaryColor;
-    const s = settings.secondaryColor;
     const bass = settings.audioReactive ? audio.bass : 0;
 
     // Dark void background
@@ -65,8 +86,8 @@ export class BackgroundRenderer {
     const r1 = Math.max(width, height) * (0.45 + bass * 0.08);
 
     const grad1 = ctx.createRadialGradient(cx1, cy1, 10, cx1, cy1, r1);
-    grad1.addColorStop(0, `rgba(${p.r}, ${p.g}, ${p.b}, 0.35)`);
-    grad1.addColorStop(0.5, `rgba(${p.r}, ${p.g}, ${p.b}, 0.1)`);
+    grad1.addColorStop(0, `rgba(${this.cachedPrimaryStr}, 0.35)`);
+    grad1.addColorStop(0.5, `rgba(${this.cachedPrimaryStr}, 0.1)`);
     grad1.addColorStop(1, 'rgba(6, 7, 17, 0)');
 
     ctx.fillStyle = grad1;
@@ -78,8 +99,8 @@ export class BackgroundRenderer {
     const r2 = Math.max(width, height) * (0.4 + bass * 0.06);
 
     const grad2 = ctx.createRadialGradient(cx2, cy2, 10, cx2, cy2, r2);
-    grad2.addColorStop(0, `rgba(${s.r}, ${s.g}, ${s.b}, 0.3)`);
-    grad2.addColorStop(0.5, `rgba(${s.r}, ${s.g}, ${s.b}, 0.08)`);
+    grad2.addColorStop(0, `rgba(${this.cachedSecondaryStr}, 0.3)`);
+    grad2.addColorStop(0.5, `rgba(${this.cachedSecondaryStr}, 0.08)`);
     grad2.addColorStop(1, 'rgba(6, 7, 17, 0)');
 
     ctx.fillStyle = grad2;
@@ -93,8 +114,6 @@ export class BackgroundRenderer {
     settings: AppSettings,
     audio: AudioMetrics
   ): void {
-    const p = settings.primaryColor;
-    const s = settings.secondaryColor;
     const bass = settings.audioReactive ? audio.bass : 0;
 
     // Dark sky gradient
@@ -112,9 +131,9 @@ export class BackgroundRenderer {
 
     ctx.save();
     const sunGrad = ctx.createLinearGradient(sunX, horizonY - sunRadius, sunX, horizonY + sunRadius);
-    sunGrad.addColorStop(0, `rgb(255, 220, 100)`);
-    sunGrad.addColorStop(0.5, `rgb(${s.r}, ${s.g}, ${s.b})`);
-    sunGrad.addColorStop(1, `rgb(${p.r}, ${p.g}, ${p.b})`);
+    sunGrad.addColorStop(0, 'rgb(255, 220, 100)');
+    sunGrad.addColorStop(0.5, `rgb(${this.cachedSecondaryStr})`);
+    sunGrad.addColorStop(1, `rgb(${this.cachedPrimaryStr})`);
 
     ctx.fillStyle = sunGrad;
     ctx.beginPath();
@@ -124,7 +143,7 @@ export class BackgroundRenderer {
 
     // Synthwave 3D Perspective Grid
     ctx.save();
-    ctx.strokeStyle = `rgba(${p.r}, ${p.g}, ${p.b}, 0.4)`;
+    ctx.strokeStyle = `rgba(${this.cachedPrimaryStr}, 0.4)`;
     ctx.lineWidth = 1.5;
 
     // Horizon Line
@@ -165,8 +184,6 @@ export class BackgroundRenderer {
     settings: AppSettings,
     audio: AudioMetrics
   ): void {
-    const p = settings.primaryColor;
-    const s = settings.secondaryColor;
     const mid = settings.audioReactive ? audio.mid : 0;
 
     ctx.fillStyle = '#030814';
@@ -179,10 +196,10 @@ export class BackgroundRenderer {
 
     for (let w = 0; w < numWaves; w++) {
       const isPrimary = w % 2 === 0;
-      const col = isPrimary ? p : s;
-      const alpha = 0.15 + mid * 0.1;
+      const colStr = isPrimary ? this.cachedPrimaryStr : this.cachedSecondaryStr;
+      const alpha = (0.15 + mid * 0.1).toFixed(2);
 
-      ctx.strokeStyle = `rgba(${col.r}, ${col.g}, ${col.b}, ${alpha.toFixed(2)})`;
+      ctx.strokeStyle = `rgba(${colStr}, ${alpha})`;
       ctx.lineWidth = 3 + w * 2;
       ctx.beginPath();
 
@@ -206,7 +223,6 @@ export class BackgroundRenderer {
     settings: AppSettings,
     audio: AudioMetrics
   ): void {
-    const p = settings.primaryColor;
     const bass = settings.audioReactive ? audio.bass : 0;
 
     // Ultra dark matte black background
@@ -219,20 +235,19 @@ export class BackgroundRenderer {
     const radius = Math.min(width, height) * (0.4 + bass * 0.05);
 
     const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-    grad.addColorStop(0, `rgba(${p.r}, ${p.g}, ${p.b}, 0.15)`);
+    grad.addColorStop(0, `rgba(${this.cachedPrimaryStr}, 0.15)`);
     grad.addColorStop(1, 'rgba(10, 10, 12, 0)');
 
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
   }
 
-  private renderMouseGlow(ctx: CanvasRenderingContext2D, mouse: MouseState, settings: AppSettings): void {
-    const p = settings.primaryColor;
+  private renderMouseGlow(ctx: CanvasRenderingContext2D, mouse: MouseState): void {
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
 
     const grad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, mouse.pulseRadius);
-    grad.addColorStop(0, `rgba(${p.r}, ${p.g}, ${p.b}, 0.25)`);
+    grad.addColorStop(0, `rgba(${this.cachedPrimaryStr}, 0.25)`);
     grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
     ctx.fillStyle = grad;
@@ -249,8 +264,6 @@ export class BackgroundRenderer {
     settings: AppSettings,
     audio: AudioMetrics
   ): void {
-    const p = settings.primaryColor;
-    const s = settings.secondaryColor;
     const spectrum = audio.spectrum;
     const numBins = spectrum.length;
 
@@ -261,22 +274,18 @@ export class BackgroundRenderer {
       const barWidth = width / numBins;
       const maxHeight = height * 0.25;
 
+      const spectrumGrad = ctx.createLinearGradient(0, 0, width, 0);
+      spectrumGrad.addColorStop(0, `rgb(${this.cachedPrimaryStr})`);
+      spectrumGrad.addColorStop(1, `rgb(${this.cachedSecondaryStr})`);
+
+      ctx.fillStyle = spectrumGrad;
+      ctx.globalAlpha = 0.75;
+
       for (let i = 0; i < numBins; i++) {
         const val = spectrum[i];
         const h = val * maxHeight;
         const x = i * barWidth;
         const y = height - h;
-
-        const t = i / numBins;
-        const r = Math.round(p.r + (s.r - p.r) * t);
-        const g = Math.round(p.g + (s.g - p.g) * t);
-        const b = Math.round(p.b + (s.b - p.b) * t);
-
-        const barGrad = ctx.createLinearGradient(x, height, x, y);
-        barGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.8)`);
-        barGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0.15)`);
-
-        ctx.fillStyle = barGrad;
         ctx.fillRect(x + 2, y, barWidth - 4, h);
       }
     } else if (settings.visualizerStyle === 'circular') {
@@ -304,8 +313,8 @@ export class BackgroundRenderer {
       ctx.closePath();
 
       const ringGrad = ctx.createLinearGradient(cx - baseRadius, cy, cx + baseRadius, cy);
-      ringGrad.addColorStop(0, `rgb(${p.r}, ${p.g}, ${p.b})`);
-      ringGrad.addColorStop(1, `rgb(${s.r}, ${s.g}, ${s.b})`);
+      ringGrad.addColorStop(0, `rgb(${this.cachedPrimaryStr})`);
+      ringGrad.addColorStop(1, `rgb(${this.cachedSecondaryStr})`);
 
       ctx.strokeStyle = ringGrad;
       ctx.stroke();
@@ -331,7 +340,7 @@ export class BackgroundRenderer {
         }
       }
 
-      ctx.strokeStyle = `rgba(${p.r}, ${p.g}, ${p.b}, 0.85)`;
+      ctx.strokeStyle = `rgba(${this.cachedPrimaryStr}, 0.85)`;
       ctx.stroke();
     }
 

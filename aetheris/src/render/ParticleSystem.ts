@@ -1,4 +1,4 @@
-import { AppSettings } from '../config/settings';
+import { AppSettings, ColorRGB } from '../config/settings';
 import { AudioMetrics } from '../audio/AudioAnalyzer';
 
 export interface MouseState {
@@ -8,7 +8,6 @@ export interface MouseState {
   pulseRadius: number;
 }
 
-// Flat structure per particle stored in a single object pool or typed arrays
 interface Particle {
   x: number;
   y: number;
@@ -20,17 +19,25 @@ interface Particle {
   maxAlpha: number;
   life: number;
   maxLife: number;
-  hueOffset: number; // -0.2 to 0.2 blend between primary and secondary
+  hueOffset: number; // 0..1 blend between primary and secondary
   speedMult: number;
 }
+
+const NUM_COLOR_BUCKETS = 10;
 
 export class ParticleSystem {
   private particles: Particle[] = [];
   private pool: Particle[] = [];
   private maxCapacity = 5000;
 
+  // Cached color bucket strings to eliminate allocations during render loop
+  private colorBuckets: string[] = new Array(NUM_COLOR_BUCKETS);
+  private bucketParticles: Particle[][] = Array.from({ length: NUM_COLOR_BUCKETS }, () => []);
+  private cachedPrimary: ColorRGB = { r: 0, g: 0, b: 0 };
+  private cachedSecondary: ColorRGB = { r: 0, g: 0, b: 0 };
+
   constructor() {
-    // Pre-allocate particle objects to avoid GC overhead
+    // Pre-allocate particle objects in memory pool to avoid GC overhead
     for (let i = 0; i < this.maxCapacity; i++) {
       this.pool.push({
         x: 0,
@@ -105,7 +112,6 @@ export class ParticleSystem {
       p.life += deltaTimeSec;
 
       if (p.life >= p.maxLife) {
-        // Recycle particle
         this.recycleParticle(p, width, height, settings);
         continue;
       }
@@ -170,28 +176,67 @@ export class ParticleSystem {
     p.hueOffset = Math.random();
   }
 
+  private updateColorBuckets(primary: ColorRGB, secondary: ColorRGB): void {
+    if (
+      this.cachedPrimary.r === primary.r &&
+      this.cachedPrimary.g === primary.g &&
+      this.cachedPrimary.b === primary.b &&
+      this.cachedSecondary.r === secondary.r &&
+      this.cachedSecondary.g === secondary.g &&
+      this.cachedSecondary.b === secondary.b
+    ) {
+      return;
+    }
+
+    this.cachedPrimary = { ...primary };
+    this.cachedSecondary = { ...secondary };
+
+    for (let b = 0; b < NUM_COLOR_BUCKETS; b++) {
+      const t = b / (NUM_COLOR_BUCKETS - 1);
+      const r = Math.round(primary.r + (secondary.r - primary.r) * t);
+      const g = Math.round(primary.g + (secondary.g - primary.g) * t);
+      const blue = Math.round(primary.b + (secondary.b - primary.b) * t);
+      this.colorBuckets[b] = `rgb(${r}, ${g}, ${blue})`;
+    }
+  }
+
   public render(ctx: CanvasRenderingContext2D, settings: AppSettings): void {
     if (this.particles.length === 0) return;
 
-    ctx.save();
-    ctx.globalCompositeOperation = 'lighter';
+    this.updateColorBuckets(settings.primaryColor, settings.secondaryColor);
 
-    const pColor = settings.primaryColor;
-    const sColor = settings.secondaryColor;
+    // Clear bucket arrays
+    for (let b = 0; b < NUM_COLOR_BUCKETS; b++) {
+      this.bucketParticles[b].length = 0;
+    }
 
+    // Sort active particles into color buckets
     for (let i = 0; i < this.particles.length; i++) {
       const p = this.particles[i];
       if (p.alpha <= 0.01) continue;
 
-      // Interpolate RGB between primary and secondary based on particle hueOffset
-      const t = p.hueOffset;
-      const r = Math.round(pColor.r + (sColor.r - pColor.r) * t);
-      const g = Math.round(pColor.g + (sColor.g - pColor.g) * t);
-      const b = Math.round(pColor.b + (sColor.b - pColor.b) * t);
+      const bucketIdx = Math.min(NUM_COLOR_BUCKETS - 1, Math.floor(p.hueOffset * NUM_COLOR_BUCKETS));
+      this.bucketParticles[bucketIdx].push(p);
+    }
 
-      ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${p.alpha.toFixed(3)})`;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+
+    // Batch draw particles by color bucket
+    for (let b = 0; b < NUM_COLOR_BUCKETS; b++) {
+      const list = this.bucketParticles[b];
+      if (list.length === 0) continue;
+
+      ctx.fillStyle = this.colorBuckets[b];
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+
+      for (let i = 0; i < list.length; i++) {
+        const p = list[i];
+        ctx.globalAlpha = p.alpha;
+        ctx.moveTo(p.x + p.size, p.y);
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      }
+
       ctx.fill();
     }
 
