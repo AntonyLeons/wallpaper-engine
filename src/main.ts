@@ -164,7 +164,10 @@ class Application {
     // 4. Render Particles
     this.particleSystem.render(this.ctx, settings);
 
-    // 5. Update UI Clock Overlay
+    // 5. Render Canvas Clock Overlay
+    this.clockOverlay.renderToCanvas(this.ctx, width, height, settings);
+
+    // 6. Update UI Clock Overlay
     this.clockOverlay.update(settings);
 
     requestAnimationFrame((t) => this.tick(t));
@@ -213,6 +216,7 @@ class Application {
         this.particleSystem.update(dt, width, height, settings, audioMetrics, this.mouse);
         this.backgroundRenderer.render(this.ctx, width, height, dt, settings, audioMetrics, this.mouse);
         this.particleSystem.render(this.ctx, settings);
+        this.clockOverlay.renderToCanvas(this.ctx, width, height, settings);
         this.clockOverlay.update(settings);
 
         statusOverlay.textContent = `Recording [Theme ${t + 1}/4: ${theme.title}] Frame ${f + 1}/${framesPerTheme}...`;

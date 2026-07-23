@@ -5,6 +5,13 @@
   "preview": "preview.gif",
   "type": "web",
   "visibility": "public",
+  "tags": [
+    "Audio responsive",
+    "Clock",
+    "Abstract",
+    "Cyberpunk",
+    "Relaxing"
+  ],
   "general": {
     "properties": {
       "schemetype": {

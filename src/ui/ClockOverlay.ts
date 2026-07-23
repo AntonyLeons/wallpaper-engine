@@ -7,8 +7,8 @@ export class ClockOverlay {
   private dateEl: HTMLElement | null = null;
   private mediaEl: HTMLElement | null = null;
 
-  private lastFormattedTime = '';
-  private lastFormattedDate = '';
+  private lastFormattedTime = '14:30:00';
+  private lastFormattedDate = 'THURSDAY, 23 JUL';
   private mediaTitle = '';
   private mediaArtist = '';
 
@@ -118,5 +118,63 @@ export class ClockOverlay {
     // Dynamic color matching primary accent
     const p = settings.primaryColor;
     this.timeEl.style.textShadow = `0 0 20px rgba(${p.r}, ${p.g}, ${p.b}, 0.5), 0 0 40px rgba(${p.r}, ${p.g}, ${p.b}, 0.2)`;
+  }
+
+  public renderToCanvas(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    settings: AppSettings
+  ): void {
+    if (!settings.showClock) return;
+
+    ctx.save();
+
+    const p = settings.primaryColor;
+    const cx = width * 0.5;
+    const cy = height * 0.14;
+
+    const timeText = this.lastFormattedTime || '14:30:00';
+    const dateText = this.lastFormattedDate || 'THURSDAY, 23 JUL';
+    const mediaText = this.mediaTitle
+      ? (this.mediaArtist ? `🎵 ${this.mediaTitle} — ${this.mediaArtist}` : `🎵 ${this.mediaTitle}`)
+      : '🎵 Solar Drift — Aetheris';
+
+    // Glassmorphism Card Backdrop
+    const cardWidth = Math.min(420, width * 0.8);
+    const cardHeight = 110;
+    const rx = cx - cardWidth / 2;
+    const ry = cy - 25;
+
+    ctx.fillStyle = 'rgba(10, 12, 24, 0.45)';
+    ctx.beginPath();
+    ctx.roundRect(rx, ry, cardWidth, cardHeight, 18);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Time Text
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = `rgba(${p.r}, ${p.g}, ${p.b}, 0.6)`;
+    ctx.shadowBlur = 15;
+    ctx.font = 'bold 44px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(timeText, cx, ry + 10);
+
+    // Date Text
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+    ctx.font = '500 14px system-ui, sans-serif';
+    ctx.fillText(dateText.toUpperCase(), cx, ry + 60);
+
+    // Media Badge
+    ctx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, 0.95)`;
+    ctx.font = '13px system-ui, sans-serif';
+    ctx.fillText(mediaText, cx, ry + 82);
+
+    ctx.restore();
   }
 }
