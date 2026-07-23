@@ -1,2 +1,6 @@
+packages:
+  - 'aetheris'
+  - '*'
+
 allowBuilds:
   esbuild: true

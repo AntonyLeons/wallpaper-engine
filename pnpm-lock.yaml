@@ -6,7 +6,9 @@ settings:
 
 importers:
 
-  .:
+  .: {}
+
+  aetheris:
     devDependencies:
       esbuild:
         specifier: ^0.28.1
