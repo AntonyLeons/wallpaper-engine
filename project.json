@@ -5,11 +5,13 @@
   "preview": "preview.gif",
   "type": "web",
   "visibility": "public",
+  "resolution": "3840x2160",
   "tags": [
+    "Abstract",
     "Audio responsive",
     "Clock",
-    "Abstract",
-    "Cyberpunk",
+    "Customizable",
+    "Sci-Fi",
     "Relaxing"
   ],
   "general": {
