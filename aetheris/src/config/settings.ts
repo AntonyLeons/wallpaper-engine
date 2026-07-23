@@ -20,6 +20,7 @@ export interface AppSettings {
   audioReactive: boolean;
   audioSensitivity: number;
   visualizerStyle: VisualizerStyle;
+  taskbarOffset: number; // in pixels
   primaryColor: ColorRGB;
   secondaryColor: ColorRGB;
   fpsLimit: number; // 0 for unlimited
@@ -35,6 +36,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   audioReactive: true,
   audioSensitivity: 1.5,
   visualizerStyle: 'bars',
+  taskbarOffset: 48,
   primaryColor: { r: 102, g: 153, b: 255 }, // #6699ff
   secondaryColor: { r: 230, g: 51, b: 204 }, // #e633cc
   fpsLimit: 60,
@@ -81,6 +83,12 @@ class SettingsManager {
     const format = (params.get('clockformat') || params.get('format'))?.toLowerCase() as ClockFormat;
     if (format && (format === '12h' || format === '24h')) {
       this.currentSettings.clockFormat = format;
+    }
+
+    const offset = params.get('taskbaroffset') || params.get('offset');
+    if (offset !== null) {
+      const val = parseInt(offset, 10);
+      if (!isNaN(val)) this.currentSettings.taskbarOffset = Math.max(0, Math.min(200, val));
     }
   }
 
@@ -154,6 +162,14 @@ class SettingsManager {
       const vis = String(properties.visualizerstyle.value).toLowerCase() as VisualizerStyle;
       if (['bars', 'circular', 'waveform', 'off'].includes(vis)) {
         this.currentSettings.visualizerStyle = vis;
+        changed = true;
+      }
+    }
+
+    if (properties.taskbaroffset?.value !== undefined) {
+      const val = Number(properties.taskbaroffset.value);
+      if (!isNaN(val)) {
+        this.currentSettings.taskbarOffset = Math.max(0, Math.min(200, Math.round(val)));
         changed = true;
       }
     }

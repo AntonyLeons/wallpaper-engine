@@ -87,6 +87,14 @@
           { "label": "Disabled", "value": "off" }
         ]
       },
+      "taskbaroffset": {
+        "text": "Bottom Margin / Taskbar Offset (px)",
+        "type": "slider",
+        "min": 0,
+        "max": 150,
+        "step": 5,
+        "value": 48
+      },
       "primarycolor": {
         "text": "Primary Accent Color",
         "type": "color",
