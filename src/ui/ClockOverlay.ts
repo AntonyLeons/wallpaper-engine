@@ -1,14 +1,20 @@
 import { AppSettings } from '../config/settings';
+import { WallpaperMediaProperties } from '../types/wallpaper';
 
 export class ClockOverlay {
   private containerEl: HTMLElement | null = null;
   private timeEl: HTMLElement | null = null;
   private dateEl: HTMLElement | null = null;
+  private mediaEl: HTMLElement | null = null;
+
   private lastFormattedTime = '';
   private lastFormattedDate = '';
+  private mediaTitle = '';
+  private mediaArtist = '';
 
   constructor() {
     this.createDOM();
+    this.initMediaListener();
   }
 
   private createDOM(): void {
@@ -24,10 +30,42 @@ export class ClockOverlay {
     this.dateEl.id = 'clock-date';
     this.dateEl.className = 'clock-date';
 
+    this.mediaEl = document.createElement('div');
+    this.mediaEl.id = 'clock-media';
+    this.mediaEl.className = 'clock-media';
+    this.mediaEl.style.display = 'none';
+
     this.containerEl.appendChild(this.timeEl);
     this.containerEl.appendChild(this.dateEl);
+    this.containerEl.appendChild(this.mediaEl);
 
     document.body.appendChild(this.containerEl);
+  }
+
+  private initMediaListener(): void {
+    if (typeof window !== 'undefined' && window.wallpaperRegisterMediaPropertiesListener) {
+      try {
+        window.wallpaperRegisterMediaPropertiesListener((props: WallpaperMediaProperties) => {
+          this.mediaTitle = props.title || '';
+          this.mediaArtist = props.artist || '';
+          this.updateMediaDisplay();
+        });
+      } catch (err) {
+        console.warn('Media listener error:', err);
+      }
+    }
+  }
+
+  private updateMediaDisplay(): void {
+    if (!this.mediaEl) return;
+
+    if (this.mediaTitle) {
+      const text = this.mediaArtist ? `🎵 ${this.mediaTitle} — ${this.mediaArtist}` : `🎵 ${this.mediaTitle}`;
+      this.mediaEl.textContent = text;
+      this.mediaEl.style.display = 'block';
+    } else {
+      this.mediaEl.style.display = 'none';
+    }
   }
 
   public update(settings: AppSettings): void {

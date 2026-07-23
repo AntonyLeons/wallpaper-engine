@@ -66,6 +66,18 @@ html, body {
   color: rgba(255, 255, 255, 0.75);
 }
 
+.clock-media {
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 1px;
+  margin-top: 0.4rem;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 400px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Responsive adjust for lower screen resolutions */
 @media (max-height: 720px) {
   .clock-hud {

@@ -44,8 +44,37 @@ class SettingsManager {
   private currentSettings: AppSettings = { ...DEFAULT_SETTINGS };
   private listeners: SettingsChangeListener[] = [];
 
+  constructor() {
+    this.parseURLSearchParams();
+  }
+
   public get settings(): Readonly<AppSettings> {
     return this.currentSettings;
+  }
+
+  private parseURLSearchParams(): void {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+
+    const theme = (params.get('theme') || params.get('schemetype'))?.toLowerCase() as SchemeType;
+    if (theme && ['cosmic', 'synthwave', 'quantum', 'obsidian'].includes(theme)) {
+      this.currentSettings.schemeType = theme;
+    }
+
+    const vis = (params.get('visualizer') || params.get('visualizerstyle'))?.toLowerCase() as VisualizerStyle;
+    if (vis && ['bars', 'circular', 'waveform', 'off'].includes(vis)) {
+      this.currentSettings.visualizerStyle = vis;
+    }
+
+    const clock = params.get('clock') || params.get('showclock');
+    if (clock !== null) {
+      this.currentSettings.showClock = clock !== 'false' && clock !== '0';
+    }
+
+    const format = (params.get('clockformat') || params.get('format'))?.toLowerCase() as ClockFormat;
+    if (format && (format === '12h' || format === '24h')) {
+      this.currentSettings.clockFormat = format;
+    }
   }
 
   public subscribe(listener: SettingsChangeListener): () => void {

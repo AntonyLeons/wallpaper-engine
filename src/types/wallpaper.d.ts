@@ -22,11 +22,29 @@ export interface WallpaperPropertyListener {
   applyGeneralProperties?: (properties: Record<string, unknown>) => void;
 }
 
+export interface WallpaperMediaProperties {
+  title?: string;
+  artist?: string;
+  subTitle?: string;
+  albumTitle?: string;
+  albumCoverUrl?: string;
+}
+
+export interface WallpaperMediaPlayback {
+  state?: number; // 0 = stopped, 1 = playing, 2 = paused
+}
+
 declare global {
   interface Window {
     wallpaperPropertyListener?: WallpaperPropertyListener;
     wallpaperRegisterAudioListener?: (
       callback: (audioArray: number[]) => void
+    ) => void;
+    wallpaperRegisterMediaPropertiesListener?: (
+      callback: (mediaProps: WallpaperMediaProperties) => void
+    ) => void;
+    wallpaperRegisterMediaPlaybackListener?: (
+      callback: (playback: WallpaperMediaPlayback) => void
     ) => void;
   }
 }
