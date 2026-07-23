@@ -1,0 +1,81 @@
+/* Reset & Layout */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #060711;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: #ffffff;
+}
+
+/* Wallpaper Canvas */
+#wallpaper-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 1;
+}
+
+/* Glassmorphism Clock HUD */
+.clock-hud {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem 2.5rem;
+  background: rgba(10, 12, 24, 0.35);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.clock-time {
+  font-size: 3.8rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  line-height: 1;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+}
+
+.clock-date {
+  font-size: 1.1rem;
+  font-weight: 400;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-top: 0.5rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* Responsive adjust for lower screen resolutions */
+@media (max-height: 720px) {
+  .clock-hud {
+    padding: 0.8rem 1.8rem;
+    border-radius: 14px;
+  }
+  .clock-time {
+    font-size: 2.5rem;
+  }
+  .clock-date {
+    font-size: 0.9rem;
+  }
+}
