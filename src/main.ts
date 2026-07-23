@@ -164,10 +164,7 @@ class Application {
     // 4. Render Particles
     this.particleSystem.render(this.ctx, settings);
 
-    // 5. Render Canvas Clock Overlay
-    this.clockOverlay.renderToCanvas(this.ctx, width, height, settings);
-
-    // 6. Update UI Clock Overlay
+    // 5. Update UI Clock Overlay
     this.clockOverlay.update(settings);
 
     requestAnimationFrame((t) => this.tick(t));
