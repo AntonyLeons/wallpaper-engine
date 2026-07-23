@@ -1,64 +1,350 @@
 # Wallpaper Engine Workspace
 
-This repository is a multi-theme monorepo containing Wallpaper Engine web wallpapers (e.g. `aetheris/`).
+This repository is a pnpm monorepo containing multiple Wallpaper Engine web wallpapers, such as `aetheris/`.
+
+Each wallpaper is a self-contained package and should be treated as an always-running desktop application. Prioritise performance, stability, offline support and graceful fallbacks.
 
 ## Workspace Structure
 
-- Each wallpaper theme resides in its own root subfolder (e.g., `aetheris/`).
-- Each theme folder is a self-contained package with its own `src/`, `index.html`, `project.json`, `tsconfig.json`, `vite.config.ts`, and `dist/`.
-- Root `pnpm-workspace.yaml` and root `package.json` orchestrate multi-wallpaper builds and type-checking across the workspace.
+Each wallpaper theme lives in its own root folder:
+
+```text
+aetheris/
+├── src/
+├── public/
+├── index.html
+├── project.json
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+└── dist/
+```
+
+Shared code may live under `packages/`.
+
+Rules:
+
+* Each theme must build independently.
+* Import shared code through workspace packages, not cross-theme relative paths.
+* Keep unrelated files outside theme folders.
+* Do not edit generated `dist/` files manually.
+* Preserve existing `project.json` fields and property keys.
 
 ## Stack
 
-- TypeScript
-- HTML
-- CSS
-- Canvas 2D or WebGL
-- Vite for local development and production builds
-- pnpm Workspaces for monorepo management
+* TypeScript
+* HTML and CSS
+* Canvas 2D or WebGL
+* Vite
+* pnpm Workspaces
+* Remotion for offline rendering and previews
 
-## Requirements
+Prefer plain TypeScript and Canvas for simple themes. Use WebGL for shaders or large particle systems. Do not add React or large dependencies unless clearly justified.
 
-- The production entry point for each wallpaper must be `<wallpaper-folder>/dist/index.html`.
-- All production assets must work without a web server.
-- Use relative asset paths (`./assets/...`).
-- Do not require runtime internet access.
-- Do not include Node.js APIs in browser code.
-- Support 16:9, 21:9 and 4K displays.
-- Avoid layout shifts and visible loading flashes.
+## Build Requirements
+
+Each theme must produce:
+
+```text
+<theme>/dist/index.html
+```
+
+Production builds must:
+
+* Work without a web server.
+* Use relative asset paths.
+* Work offline.
+* Include all required assets locally.
+* Avoid Node.js APIs in browser code.
+* Avoid localhost URLs and absolute filesystem paths.
+* Avoid layout shifts and loading flashes.
+
+Use a relative Vite base:
+
+```ts
+export default defineConfig({
+  base: "./",
+  build: {
+    outDir: "dist",
+    emptyOutDir: true,
+  },
+});
+```
+
+## Responsive Design
+
+Support:
+
+* 16:9
+* 16:10
+* 21:9
+* 32:9
+* Portrait
+* 1080p, 1440p and 4K
+
+Requirements:
+
+* Never assume a fixed resolution.
+* Avoid scrollbars.
+* Do not stretch raster artwork.
+* Use `object-fit: cover` where appropriate.
+* Preserve visual focal points across aspect ratios.
+* Recalculate canvas and layout state after resizing.
+* Cap device-pixel-ratio scaling to avoid excessive GPU usage.
 
 ## Performance
 
-- Respect the Wallpaper Engine FPS limit.
-- Pause animation while the page is hidden (`visibilitychange`).
-- Avoid unnecessary allocations inside animation loops.
-- Cap particle counts.
-- Reuse objects and canvas buffers where practical.
-- Avoid excessive blur filters and oversized textures.
-- Provide reduced-quality behaviour for lower settings.
+Wallpaper Engine wallpapers run continuously.
+
+* Respect Wallpaper Engine’s configured FPS.
+* Use `requestAnimationFrame`.
+* Use delta-time-based animation.
+* Pause expensive work during `visibilitychange`.
+* Reset timestamps when resuming.
+* Cap particle counts.
+* Reuse objects, arrays, buffers and textures.
+* Avoid per-frame DOM creation and unnecessary allocation.
+* Cache DOM references, contexts, gradients and shader locations.
+* Avoid oversized textures, excessive blur and full-resolution effect buffers.
+* Avoid repeated media decoding and network polling.
+* Ensure memory usage does not grow over time.
+* Provide meaningful quality levels for expensive effects.
+
+Prefer animating `transform` and `opacity`. Use Canvas or WebGL instead of large numbers of animated DOM elements.
 
 ## Wallpaper Engine Integration
 
-- Implement `window.wallpaperPropertyListener`.
-- Enable `"supportsaudioprocessing": true` in `project.json` for audio-reactive wallpapers.
-- Keep property names stable.
-- Validate all property values.
-- User-facing controls should include sensible defaults.
-- Audio-responsive features must fail gracefully when audio data is unavailable.
+Define Wallpaper Engine APIs as optional TypeScript globals so themes also run in Chrome.
 
-## Multi-Theme Development & Build Commands
+Register listeners early and outside `window.onload`.
 
-- **Build All Themes**: `pnpm run build`
-- **Typecheck All Themes**: `pnpm run typecheck`
-- **Build Single Theme**: `pnpm --filter <theme-package-name> build` (e.g., `pnpm run build:aetheris`)
-- **Generate Preview Assets**: `pnpm run generate:preview <theme-name>` (runs universal preview server for `preview.gif` / `preview.jpg` generation)
+Each interactive theme should implement:
 
-## Validation
+```ts
+window.wallpaperPropertyListener = {
+  applyGeneralProperties(properties) {
+    if (typeof properties.fps === "number") {
+      settings.fps = Math.max(0, properties.fps);
+    }
+  },
 
-Before completing a task:
+  applyUserProperties(properties) {
+    if (properties.backgroundcolor) {
+      applyBackgroundColor(properties.backgroundcolor.value);
+    }
 
-1. Run workspace build (`pnpm run build`).
-2. Run linting and type checking (`pnpm run typecheck`).
-3. Verify that `<wallpaper-folder>/dist/index.html` opens locally.
-4. Check the browser console for errors.
-5. Confirm that all asset paths in build outputs are relative.
+    if (properties.particlecount) {
+      applyParticleCount(properties.particlecount.value);
+    }
+  },
+};
+```
+
+Wallpaper Engine sends all properties initially, but only changed properties later. Always check each property independently.
+
+Do not overwrite an existing listener object when adding callbacks.
+
+## User Properties
+
+Supported property types may include:
+
+* `color`
+* `slider`
+* `bool`
+* `combo`
+* `textinput`
+* `file`
+* `directory`
+
+Rules:
+
+* Keep property keys stable and language-neutral.
+* Validate and clamp every value.
+* Keep code defaults aligned with `project.json`.
+* Use translated labels, not translated internal values.
+* Use display conditions to hide irrelevant controls.
+* Use `textContent`, not `innerHTML`, for user text.
+* Provide fallbacks for missing or invalid files.
+* Do not repeatedly retry failed asset loads.
+
+Wallpaper Engine colour values are space-separated floats from `0` to `1`. Convert them before using them as CSS colours.
+
+## Audio
+
+Audio-reactive wallpapers must set:
+
+```json
+{
+  "supportsaudioprocessing": true
+}
+```
+
+Register the listener early:
+
+```ts
+window.wallpaperRegisterAudioListener?.((audioData) => {
+  // Validate, clamp, aggregate and store values.
+});
+```
+
+Wallpaper Engine provides 128 values:
+
+* `0–63`: left channel
+* `64–127`: right channel
+
+Do not render inside the audio callback. Store smoothed bass, mid, treble and overall levels, then render them in the main animation loop.
+
+Audio features must work gracefully when:
+
+* No audio is playing.
+* The API is unavailable.
+* Audio processing is disabled.
+* Values remain zero.
+
+## Media and RGB
+
+Treat media-session and RGB APIs as optional.
+
+* Register listeners early.
+* Validate every callback payload.
+* Handle missing artwork, titles, durations and timeline data.
+* Do not repeatedly decode unchanged artwork.
+* Do not expose media information externally.
+* Only use RGB APIs after the relevant plugin reports that it loaded.
+* Downsample RGB output to a small canvas.
+* Update RGB devices at a bounded frequency.
+* RGB failure must never break the main wallpaper.
+
+## Files and Directories
+
+Convert user-selected files to local file URLs and always provide a fallback.
+
+For directory properties:
+
+* Support empty and removed directories.
+* Load files lazily.
+* Limit decoded images, active videos and cache size.
+* Remove stale paths when Wallpaper Engine reports removals.
+* Do not load an entire directory into memory.
+
+## WebGL
+
+When using WebGL:
+
+* Detect context creation failure.
+* Provide a fallback.
+* Handle context loss and restoration.
+* Compile shaders once.
+* Reuse buffers and textures.
+* Dispose obsolete GPU resources.
+* Use reduced-resolution buffers for blur and bloom.
+* Avoid GPU-to-CPU pixel reads in the main loop.
+
+## Remotion
+
+Use Remotion primarily as an offline rendering tool for:
+
+* Seamless video loops
+* Cinematic backgrounds
+* Theme variants
+* Workshop previews
+* Preview images and GIFs
+
+Prefer this architecture:
+
+```text
+Shared visual logic
+├── Wallpaper Engine live runtime
+└── Remotion offline renderer
+```
+
+Do not use the Remotion Player inside the live wallpaper by default.
+
+Rendered loops must:
+
+* Be deterministic.
+* Use seeded randomness.
+* Match visually at the loop boundary.
+* Avoid runtime network requests.
+* Use supported formats such as WebM.
+* Use practical resolutions, bitrates and file sizes.
+
+Keep live interactions such as audio, mouse parallax, media data, user properties and RGB inside the Wallpaper Engine runtime.
+
+## Browser and Wallpaper Engine Testing
+
+Every theme must also run in Chrome when Wallpaper Engine APIs are unavailable.
+
+Use feature detection, not user-agent detection.
+
+Before completing a theme change:
+
+1. Run linting and type checking.
+2. Build the affected theme.
+3. Confirm `dist/index.html` exists.
+4. Open it locally.
+5. Check the console for errors.
+6. Confirm asset paths are relative.
+7. Test common aspect ratios.
+8. Confirm optional APIs fail gracefully.
+9. Report anything requiring manual Wallpaper Engine testing.
+
+For shared or workspace-wide changes, run the full workspace validation.
+
+## Commands
+
+```bash
+pnpm run build
+pnpm run typecheck
+pnpm run lint
+pnpm run check
+pnpm run generate:preview <theme-name>
+```
+
+Build a single theme:
+
+```bash
+pnpm --filter <theme-package-name> build
+```
+
+Develop a single theme:
+
+```bash
+pnpm --filter <theme-package-name> dev
+```
+
+Recommended root scripts:
+
+```json
+{
+  "scripts": {
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "pnpm -r --if-present lint",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "generate:preview": "tsx scripts/generate-preview.ts",
+    "validate:builds": "tsx scripts/validate-builds.ts",
+    "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run build && pnpm run validate:builds"
+  }
+}
+```
+
+## Change Policy
+
+* Prefer focused changes.
+* Avoid unrelated refactors.
+* Preserve property compatibility.
+* Preserve theme boundaries.
+* Avoid unnecessary dependencies.
+* Do not increase resource usage without justification.
+* Document new properties and manual `project.json` changes.
+* Do not claim checks passed unless they were actually run.
+
+## Source of Truth
+
+Use the official Wallpaper Engine documentation for Wallpaper Engine APIs and behaviour.
+
+Use the official Remotion documentation for rendering behaviour.
+
+Do not invent APIs or assume that normal Chrome behaviour is identical to Wallpaper Engine’s embedded Chromium environment.
