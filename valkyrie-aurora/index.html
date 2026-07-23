@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Valkyrie Aurora - Cyber Anime Parallax & Audio Reactive Wallpaper" />
+    <title>Valkyrie Aurora - Cyber Anime Parallax Wallpaper</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <!-- Background & Render Canvas -->
+    <canvas id="wallpaper-canvas"></canvas>
+
+    <!-- Glassmorphism Clock & Status Widget Overlay -->
+    <div id="clock-container" class="clock-overlay">
+      <div class="clock-time-wrapper">
+        <span id="clock-time" class="clock-time">00:00:00</span>
+        <span id="clock-ampm" class="clock-ampm"></span>
+      </div>
+      <div id="clock-date" class="clock-date">Thursday, July 23</div>
+      <div class="audio-status-indicator">
+        <span class="pulse-dot"></span>
+        <span id="audio-state-text">AUDIO SYNC</span>
+      </div>
+    </div>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

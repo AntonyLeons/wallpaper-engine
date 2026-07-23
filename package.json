@@ -8,6 +8,8 @@
     "typecheck": "pnpm --recursive run typecheck",
     "dev:aetheris": "pnpm --filter wallpaper-engine-aetheris dev",
     "build:aetheris": "pnpm --filter wallpaper-engine-aetheris build",
+    "dev:valkyrie": "pnpm --filter wallpaper-engine-valkyrie-aurora dev",
+    "build:valkyrie": "pnpm --filter wallpaper-engine-valkyrie-aurora build",
     "generate:preview": "node scripts/generate_preview.js"
   }
 }

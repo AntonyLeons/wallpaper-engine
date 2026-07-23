@@ -71,6 +71,16 @@ export default defineConfig({
 });
 ```
 
+## Local Steam Integration & Symlinking
+
+To link built themes directly into local Steam Wallpaper Engine projects for live preview:
+
+* Create a Directory Junction link from the theme's production `dist/` folder to Steam's `myprojects` directory:
+  ```powershell
+  New-Item -ItemType Junction -Path "D:\SteamLibrary\steamapps\common\wallpaper_engine\projects\myprojects\<theme-name>" -Target "<workspace-root>\<theme-name>\dist"
+  ```
+* Production builds (`pnpm run build`) will automatically reflect instantly inside Wallpaper Engine in real time without requiring manual file copying.
+
 ## Responsive Design
 
 Support:

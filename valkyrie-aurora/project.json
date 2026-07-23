@@ -1,0 +1,137 @@
+{
+  "title": "Celestial Goddess - Ethereal Anime Parallax & Audio Reactive Wallpaper",
+  "description": "A high-performance PG-13 fantasy anime parallax web wallpaper featuring an Ethereal Goddess bust portrait, moonlit starry night atmosphere, soft idle breathing animation, floating celestial particles, real-time audio spectrum visualization, and customizable UI.",
+  "file": "index.html",
+  "preview": "preview.gif",
+  "type": "web",
+  "visibility": "public",
+  "resolution": "3840x2160",
+  "tags": [
+    "Anime",
+    "Fantasy",
+    "Audio responsive",
+    "Parallax",
+    "Clock",
+    "Customizable"
+  ],
+  "general": {
+    "supportsaudioprocessing": true,
+    "properties": {
+      "schemetype": {
+        "text": "Preset Color Palette",
+        "type": "combo",
+        "value": "celestial",
+        "options": [
+          { "label": "Celestial Gold & Rose", "value": "celestial" },
+          { "label": "Lunar Rose & Lavender", "value": "lunar" },
+          { "label": "Starry Lavender & Sky Blue", "value": "starry" },
+          { "label": "Emerald Jade & Turquoise", "value": "emerald" }
+        ]
+      },
+      "parallaxintensity": {
+        "text": "Mouse Parallax Intensity",
+        "type": "slider",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1.0
+      },
+      "breathingintensity": {
+        "text": "Character Idle Breathing Motion",
+        "type": "slider",
+        "min": 0,
+        "max": 2,
+        "step": 0.1,
+        "value": 1.0
+      },
+      "particlecount": {
+        "text": "Celestial Sparkle Density",
+        "type": "slider",
+        "min": 100,
+        "max": 3000,
+        "step": 100,
+        "value": 1200
+      },
+      "particlespeed": {
+        "text": "Particle Speed",
+        "type": "slider",
+        "min": 0.1,
+        "max": 3.0,
+        "step": 0.1,
+        "value": 1.0
+      },
+      "showclock": {
+        "text": "Show Digital Clock Widget",
+        "type": "bool",
+        "value": true
+      },
+      "showseconds": {
+        "text": "Show Seconds in Clock",
+        "type": "bool",
+        "value": true
+      },
+      "clockformat": {
+        "text": "Clock Time Format",
+        "type": "combo",
+        "value": "24h",
+        "options": [
+          { "label": "24-Hour (14:30)", "value": "24h" },
+          { "label": "12-Hour (02:30 PM)", "value": "12h" }
+        ]
+      },
+      "audioreactive": {
+        "text": "Audio Reactivity Enable",
+        "type": "bool",
+        "value": true
+      },
+      "audiosensitivity": {
+        "text": "Audio Reaction Sensitivity",
+        "type": "slider",
+        "min": 0.5,
+        "max": 3.0,
+        "step": 0.1,
+        "value": 1.5
+      },
+      "visualizerstyle": {
+        "text": "Audio Spectrum Display Style",
+        "type": "combo",
+        "value": "bars",
+        "options": [
+          { "label": "Bottom Spectrum Bars", "value": "bars" },
+          { "label": "Aura Pulse Glow", "value": "glow_pulse" },
+          { "label": "Floating Spectrum Ring", "value": "ring" },
+          { "label": "Disabled", "value": "off" }
+        ]
+      },
+      "taskbaroffset": {
+        "text": "Bottom Taskbar Margin (px)",
+        "type": "slider",
+        "min": 0,
+        "max": 150,
+        "step": 5,
+        "value": 48
+      },
+      "primarycolor": {
+        "text": "Primary Accent Color",
+        "type": "color",
+        "value": "1.0 0.76 0.33"
+      },
+      "secondarycolor": {
+        "text": "Secondary Accent Color",
+        "type": "color",
+        "value": "0.94 0.43 0.67"
+      },
+      "fpslimit": {
+        "text": "Target Frame Rate",
+        "type": "combo",
+        "value": "60",
+        "options": [
+          { "label": "30 FPS (Power Saver)", "value": "30" },
+          { "label": "60 FPS (Smooth)", "value": "60" },
+          { "label": "120 FPS (Ultra)", "value": "120" },
+          { "label": "Unlimited", "value": "unlimited" }
+        ]
+      }
+    }
+  }
+}
