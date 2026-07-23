@@ -51,6 +51,7 @@ This repository is a multi-theme monorepo containing Wallpaper Engine web wallpa
 - **Build All Themes**: `pnpm run build`
 - **Typecheck All Themes**: `pnpm run typecheck`
 - **Build Single Theme**: `pnpm --filter <theme-package-name> build` (e.g., `pnpm run build:aetheris`)
+- **Generate Preview Assets**: `pnpm run generate:preview <theme-name>` (runs universal preview server for `preview.gif` / `preview.jpg` generation)
 
 ## Validation
 
