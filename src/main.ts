@@ -6,6 +6,13 @@ import { BackgroundRenderer } from './render/BackgroundRenderer';
 import { ClockOverlay } from './ui/ClockOverlay';
 import { WallpaperUserProperties } from './types/wallpaper';
 
+// Register wallpaperPropertyListener immediately at global top-level per official Wallpaper Engine docs
+window.wallpaperPropertyListener = {
+  applyUserProperties: (properties: WallpaperUserProperties) => {
+    settingsManager.updateFromWallpaperEngine(properties);
+  },
+};
+
 class Application {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -42,7 +49,6 @@ class Application {
     this.clockOverlay = new ClockOverlay();
 
     this.initEvents();
-    this.initWallpaperEngine();
     this.handleResize();
 
     this.startLoop();
@@ -91,14 +97,6 @@ class Application {
     window.addEventListener('touchend', () => {
       this.mouse.active = false;
     });
-  }
-
-  private initWallpaperEngine(): void {
-    window.wallpaperPropertyListener = {
-      applyUserProperties: (properties: WallpaperUserProperties) => {
-        settingsManager.updateFromWallpaperEngine(properties);
-      },
-    };
   }
 
   private handleResize(): void {
