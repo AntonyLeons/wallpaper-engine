@@ -1,0 +1,1 @@
+{"name":"wallpaper-engine-minecraft-steve","private":true,"type":"module","scripts":{"build":"vite build && node -e \"import('fs').then(fs=>fs.copyFileSync('project.json','dist/project.json'))\"","typecheck":"node -e \"console.log('No TypeScript sources.')\""},"devDependencies":{"vite":"^8.1.5"}}
