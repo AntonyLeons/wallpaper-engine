@@ -267,10 +267,15 @@ export class BackgroundRenderer {
     const spectrum = audio.spectrum;
     const numBins = spectrum.length;
 
+    // Detect taskbar height dynamically or use configured taskbarOffset
+    const autoTaskbarHeight = typeof window !== 'undefined' && window.screen ? Math.max(0, window.screen.height - window.screen.availHeight) : 0;
+    const taskbarOffset = settings.taskbarOffset > 0 ? settings.taskbarOffset : Math.max(48, autoTaskbarHeight);
+    const bottomY = height - taskbarOffset;
+
     ctx.save();
 
     if (settings.visualizerStyle === 'bars') {
-      // Bottom Spectrum Bars
+      // Bottom Spectrum Bars (rendered cleanly above taskbar)
       const barWidth = width / numBins;
       const maxHeight = height * 0.25;
       const p = settings.primaryColor;
@@ -281,14 +286,14 @@ export class BackgroundRenderer {
         if (val <= 0.001) continue;
         const h = val * maxHeight;
         const x = i * barWidth;
-        const y = height - h;
+        const y = bottomY - h;
 
         const t = i / numBins;
         const r = Math.round(p.r + (s.r - p.r) * t);
         const g = Math.round(p.g + (s.g - p.g) * t);
         const b = Math.round(p.b + (s.b - p.b) * t);
 
-        const barGrad = ctx.createLinearGradient(x, height, x, y);
+        const barGrad = ctx.createLinearGradient(x, bottomY, x, y);
         barGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.85)`);
         barGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0.15)`);
 
@@ -326,12 +331,12 @@ export class BackgroundRenderer {
       ctx.strokeStyle = ringGrad;
       ctx.stroke();
     } else if (settings.visualizerStyle === 'waveform') {
-      // Flowing Waveform across screen bottom half
+      // Flowing Waveform across screen bottom half above taskbar
       ctx.globalCompositeOperation = 'lighter';
       ctx.lineWidth = 3.5;
       ctx.beginPath();
 
-      const centerY = height * 0.85;
+      const centerY = bottomY - height * 0.05;
       const step = width / (numBins - 1);
 
       for (let i = 0; i < numBins; i++) {
