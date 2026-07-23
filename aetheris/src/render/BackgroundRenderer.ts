@@ -273,19 +273,26 @@ export class BackgroundRenderer {
       // Bottom Spectrum Bars
       const barWidth = width / numBins;
       const maxHeight = height * 0.25;
-
-      const spectrumGrad = ctx.createLinearGradient(0, 0, width, 0);
-      spectrumGrad.addColorStop(0, `rgb(${this.cachedPrimaryStr})`);
-      spectrumGrad.addColorStop(1, `rgb(${this.cachedSecondaryStr})`);
-
-      ctx.fillStyle = spectrumGrad;
-      ctx.globalAlpha = 0.75;
+      const p = settings.primaryColor;
+      const s = settings.secondaryColor;
 
       for (let i = 0; i < numBins; i++) {
         const val = spectrum[i];
+        if (val <= 0.001) continue;
         const h = val * maxHeight;
         const x = i * barWidth;
         const y = height - h;
+
+        const t = i / numBins;
+        const r = Math.round(p.r + (s.r - p.r) * t);
+        const g = Math.round(p.g + (s.g - p.g) * t);
+        const b = Math.round(p.b + (s.b - p.b) * t);
+
+        const barGrad = ctx.createLinearGradient(x, height, x, y);
+        barGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.85)`);
+        barGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0.15)`);
+
+        ctx.fillStyle = barGrad;
         ctx.fillRect(x + 2, y, barWidth - 4, h);
       }
     } else if (settings.visualizerStyle === 'circular') {
