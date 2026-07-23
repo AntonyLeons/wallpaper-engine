@@ -15,6 +15,7 @@ export interface AppSettings {
   particleCount: number;
   particleSpeed: number;
   showClock: boolean;
+  showSeconds: boolean;
   clockFormat: ClockFormat;
   audioReactive: boolean;
   audioSensitivity: number;
@@ -29,6 +30,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   particleCount: 1500,
   particleSpeed: 1.0,
   showClock: true,
+  showSeconds: true,
   clockFormat: '24h',
   audioReactive: true,
   audioSensitivity: 1.5,
@@ -69,6 +71,11 @@ class SettingsManager {
     const clock = params.get('clock') || params.get('showclock');
     if (clock !== null) {
       this.currentSettings.showClock = clock !== 'false' && clock !== '0';
+    }
+
+    const seconds = params.get('seconds') || params.get('showseconds');
+    if (seconds !== null) {
+      this.currentSettings.showSeconds = seconds !== 'false' && seconds !== '0';
     }
 
     const format = (params.get('clockformat') || params.get('format'))?.toLowerCase() as ClockFormat;
@@ -114,6 +121,11 @@ class SettingsManager {
 
     if (properties.showclock?.value !== undefined) {
       this.currentSettings.showClock = Boolean(properties.showclock.value);
+      changed = true;
+    }
+
+    if (properties.showseconds?.value !== undefined) {
+      this.currentSettings.showSeconds = Boolean(properties.showseconds.value);
       changed = true;
     }
 

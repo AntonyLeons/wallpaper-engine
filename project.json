@@ -48,6 +48,11 @@
         "type": "bool",
         "value": true
       },
+      "showseconds": {
+        "text": "Show Clock Seconds",
+        "type": "bool",
+        "value": true
+      },
       "clockformat": {
         "text": "Clock Format",
         "type": "combo",

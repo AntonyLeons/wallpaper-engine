@@ -7,6 +7,7 @@ export interface WallpaperUserProperties {
   particlecount?: WallpaperProperty;
   particlespeed?: WallpaperProperty;
   showclock?: WallpaperProperty;
+  showseconds?: WallpaperProperty;
   clockformat?: WallpaperProperty;
   audioreactive?: WallpaperProperty;
   audiosensitivity?: WallpaperProperty;

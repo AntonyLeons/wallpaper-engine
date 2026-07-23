@@ -94,7 +94,8 @@ export class ClockOverlay {
     }
 
     const hoursStr = String(hours).padStart(2, '0');
-    const timeStr = `${hoursStr}:${minutes}:${seconds}${ampm}`;
+    const secondsStr = settings.showSeconds ? `:${seconds}` : '';
+    const timeStr = `${hoursStr}:${minutes}${secondsStr}${ampm}`;
 
     if (timeStr !== this.lastFormattedTime) {
       this.timeEl.textContent = timeStr;
