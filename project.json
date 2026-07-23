@@ -15,6 +15,7 @@
     "Relaxing"
   ],
   "general": {
+    "supportsaudioprocessing": true,
     "properties": {
       "schemetype": {
         "text": "Preset Theme",
