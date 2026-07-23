@@ -2,6 +2,7 @@
   "title": "Aetheris - Interactive Cosmic & Audio Visualizer",
   "description": "A high-performance, customizable interactive web wallpaper featuring cosmic nebulas, synthwave horizons, and responsive audio spectrum visualizers.",
   "file": "index.html",
+  "preview": "preview.gif",
   "type": "web",
   "visibility": "public",
   "general": {

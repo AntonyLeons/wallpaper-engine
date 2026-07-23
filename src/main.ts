@@ -1,5 +1,5 @@
 import './style.css';
-import { settingsManager } from './config/settings';
+import { settingsManager, SchemeType } from './config/settings';
 import { AudioAnalyzer } from './audio/AudioAnalyzer';
 import { ParticleSystem, MouseState } from './render/ParticleSystem';
 import { BackgroundRenderer } from './render/BackgroundRenderer';
@@ -51,7 +51,12 @@ class Application {
     this.initEvents();
     this.handleResize();
 
-    this.startLoop();
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('record') === 'true') {
+      this.runAutomatedRecorder();
+    } else {
+      this.startLoop();
+    }
   }
 
   private initEvents(): void {
@@ -163,6 +168,72 @@ class Application {
     this.clockOverlay.update(settings);
 
     requestAnimationFrame((t) => this.tick(t));
+  }
+
+  private async runAutomatedRecorder(): Promise<void> {
+    const statusOverlay = document.createElement('div');
+    statusOverlay.style.position = 'fixed';
+    statusOverlay.style.top = '20px';
+    statusOverlay.style.right = '20px';
+    statusOverlay.style.zIndex = '99999';
+    statusOverlay.style.background = 'rgba(0,0,0,0.85)';
+    statusOverlay.style.color = '#00ffcc';
+    statusOverlay.style.padding = '12px 20px';
+    statusOverlay.style.borderRadius = '8px';
+    statusOverlay.style.fontFamily = 'monospace';
+    statusOverlay.style.fontSize = '14px';
+    statusOverlay.style.border = '1px solid #00ffcc';
+    document.body.appendChild(statusOverlay);
+
+    const themes: { name: SchemeType; title: string }[] = [
+      { name: 'cosmic', title: 'Cosmic Nebula' },
+      { name: 'synthwave', title: 'Synthwave Horizon' },
+      { name: 'quantum', title: 'Quantum Field' },
+      { name: 'obsidian', title: 'Obsidian Dark' },
+    ];
+
+    const targetFps = 15;
+    const frameIntervalMs = 1000 / targetFps;
+    const secondsPerTheme = 3.0; // 3 seconds per theme to let particles generate & populate
+    const framesPerTheme = Math.round(secondsPerTheme * targetFps); // 45 frames per theme
+
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const dt = 1 / targetFps;
+
+    for (let t = 0; t < themes.length; t++) {
+      const theme = themes[t];
+      settingsManager.updateFromWallpaperEngine({ schemetype: { value: theme.name } });
+
+      for (let f = 0; f < framesPerTheme; f++) {
+        const settings = settingsManager.settings;
+        const audioMetrics = this.audioAnalyzer.update(dt, settings.audioSensitivity);
+
+        // Advance simulation
+        this.particleSystem.update(dt, width, height, settings, audioMetrics, this.mouse);
+        this.backgroundRenderer.render(this.ctx, width, height, dt, settings, audioMetrics, this.mouse);
+        this.particleSystem.render(this.ctx, settings);
+        this.clockOverlay.update(settings);
+
+        statusOverlay.textContent = `Recording [Theme ${t + 1}/4: ${theme.title}] Frame ${f + 1}/${framesPerTheme}...`;
+
+        const dataUrl = this.canvas.toDataURL('image/png');
+        await fetch('http://localhost:9876/save_frame', {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: dataUrl,
+        });
+
+        await new Promise((r) => setTimeout(r, frameIntervalMs));
+      }
+    }
+
+    statusOverlay.textContent = 'Encoding preview.gif with FFmpeg...';
+    statusOverlay.style.color = '#ffff00';
+
+    await fetch('http://localhost:9876/finish_recording', { method: 'POST' });
+    statusOverlay.textContent = 'SUCCESS! preview.gif encoded!';
+    statusOverlay.style.color = '#00ff66';
   }
 }
 
