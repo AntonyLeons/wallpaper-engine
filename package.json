@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "postbuild": "node -e \"import('fs').then(fs => { fs.copyFileSync('project.json', 'dist/project.json'); if (fs.existsSync('preview.jpg')) fs.copyFileSync('preview.jpg', 'dist/preview.jpg'); })\"",
+    "postbuild": "node -e \"import('fs').then(fs => { fs.copyFileSync('project.json', 'dist/project.json'); if (fs.existsSync('preview.jpg')) fs.copyFileSync('preview.jpg', 'dist/preview.jpg'); if (fs.existsSync('preview.gif')) fs.copyFileSync('preview.gif', 'dist/preview.gif'); })\"",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
