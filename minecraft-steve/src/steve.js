@@ -209,6 +209,7 @@ let activeUpper = null;
 let activeHead = null;
 let selectedCharacter = 'steve';
 let selectionVersion = 0;
+window.minecraftFpsLimit ??= 0;
 
 function buildCharacter(name, image) {
   if (name === 'alex') return createPlayer(image, true);
@@ -274,6 +275,8 @@ function smooth(current, target, factor, deltaSeconds) {
 function render(now) {
   requestAnimationFrame(render);
   if (!visible) return;
+  const fpsLimit = Number(window.minecraftFpsLimit) || 0;
+  if (fpsLimit > 0 && now - lastFrame < 1000 / fpsLimit) return;
   const deltaSeconds = Math.min(0.05, (now - lastFrame || 16.67) / 1000);
   lastFrame = now;
   if (activeUpper) {

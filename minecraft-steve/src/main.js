@@ -80,11 +80,11 @@ function drawEnderAura(deltaSeconds) {
 
 function render(now) {
   requestAnimationFrame(render);
-  if (!visible || settings.fps <= 0) {
+  if (!visible) {
     lastFrame = now;
     return;
   }
-  if (now - lastFrame < 1000 / settings.fps) return;
+  if (settings.fps > 0 && now - lastFrame < 1000 / settings.fps) return;
 
   const deltaSeconds = Math.min(0.05, (now - lastFrame || 16.67) / 1000);
   lastFrame = now;
@@ -102,7 +102,10 @@ const previousUserProperties = existingListener.applyUserProperties;
 
 existingListener.applyGeneralProperties = (properties) => {
   previousGeneralProperties?.(properties);
-  if (typeof properties.fps === 'number') settings.fps = Math.max(0, properties.fps);
+  if (typeof properties.fps === 'number') {
+    settings.fps = Math.max(0, properties.fps);
+    window.minecraftFpsLimit = settings.fps;
+  }
 };
 
 existingListener.applyUserProperties = (properties) => {
