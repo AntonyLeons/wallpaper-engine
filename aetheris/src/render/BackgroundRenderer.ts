@@ -301,59 +301,128 @@ export class BackgroundRenderer {
         ctx.fillRect(x + 2, y, barWidth - 4, h);
       }
     } else if (settings.visualizerStyle === 'circular') {
-      // Circular Pulse Ring in Center
+      // Layered circular spectrum: an aura, a core ring, and rounded reactive bars.
       const cx = width * 0.5;
       const cy = height * 0.5;
       const baseRadius = Math.min(width, height) * 0.18;
+      const minDimension = Math.min(width, height);
+      const barWidth = Math.max(3, minDimension * 0.0036);
+      const coreWidth = Math.max(5, minDimension * 0.006);
+      const maxBarLength = baseRadius * 0.42;
 
       ctx.globalCompositeOperation = 'lighter';
-      ctx.lineWidth = 3;
-
-      ctx.beginPath();
-      for (let i = 0; i <= numBins; i++) {
-        const idx = i % numBins;
-        const val = spectrum[idx];
-        const angle = (i / numBins) * Math.PI * 2 - Math.PI / 2;
-        const r = baseRadius + val * baseRadius * 0.8;
-
-        const x = cx + Math.cos(angle) * r;
-        const y = cy + Math.sin(angle) * r;
-
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.closePath();
-
       const ringGrad = ctx.createLinearGradient(cx - baseRadius, cy, cx + baseRadius, cy);
       ringGrad.addColorStop(0, `rgb(${this.cachedPrimaryStr})`);
       ringGrad.addColorStop(1, `rgb(${this.cachedSecondaryStr})`);
 
-      ctx.strokeStyle = ringGrad;
-      ctx.stroke();
-    } else if (settings.visualizerStyle === 'waveform') {
-      // Flowing Waveform across screen bottom half above taskbar
-      ctx.globalCompositeOperation = 'lighter';
-      ctx.lineWidth = 3.5;
+      const aura = ctx.createRadialGradient(cx, cy, baseRadius * 0.55, cx, cy, baseRadius * 1.5);
+      aura.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      aura.addColorStop(0.55, `rgba(${this.cachedPrimaryStr}, 0.08)`);
+      aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = aura;
       ctx.beginPath();
+      ctx.arc(cx, cy, baseRadius * 1.5, 0, Math.PI * 2);
+      ctx.fill();
 
-      const centerY = bottomY - height * 0.05;
-      const step = width / (numBins - 1);
+      // No reactive spokes at rest; the audio release envelope controls their final fade-out.
+      const reactiveOpacity = audio.hasAudio ? Math.min(1, Math.max(0, (audio.overall - 0.012) / 0.08)) : 0;
+      if (reactiveOpacity > 0) {
+        ctx.lineCap = 'butt';
+        for (let i = 0; i < numBins; i++) {
+          const value = Math.max(0, Math.min(1, spectrum[i]));
+          const angle = (i / numBins) * Math.PI * 2 - Math.PI / 2;
+          const length = minDimension * 0.004 + value * maxBarLength;
+          // Start beneath the core ring; it will cover the flat inner edge after the bars render.
+          const barStartRadius = baseRadius - coreWidth * 0.15;
+          const x1 = cx + Math.cos(angle) * barStartRadius;
+          const y1 = cy + Math.sin(angle) * barStartRadius;
+          const x2 = cx + Math.cos(angle) * (barStartRadius + length);
+          const y2 = cy + Math.sin(angle) * (barStartRadius + length);
+          const mix = i / Math.max(1, numBins - 1);
+          const r = Math.round(settings.primaryColor.r + (settings.secondaryColor.r - settings.primaryColor.r) * mix);
+          const g = Math.round(settings.primaryColor.g + (settings.secondaryColor.g - settings.primaryColor.g) * mix);
+          const b = Math.round(settings.primaryColor.b + (settings.secondaryColor.b - settings.primaryColor.b) * mix);
 
-      for (let i = 0; i < numBins; i++) {
-        const val = spectrum[i];
-        const x = i * step;
-        const y = centerY - val * height * 0.15;
+          ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.22 * reactiveOpacity})`;
+          ctx.lineWidth = barWidth * 3.5;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${0.22 * reactiveOpacity})`;
+          ctx.beginPath();
+          ctx.arc(x2, y2, barWidth * 1.75, 0, Math.PI * 2);
+          ctx.fill();
 
-        if (i === 0) ctx.moveTo(x, y);
-        else {
-          const prevX = (i - 1) * step;
-          const cpX = (prevX + x) / 2;
-          ctx.quadraticCurveTo(cpX, centerY - spectrum[i - 1] * height * 0.15, x, y);
+          ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${reactiveOpacity})`;
+          ctx.lineWidth = barWidth;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${reactiveOpacity})`;
+          ctx.beginPath();
+          ctx.arc(x2, y2, barWidth * 0.5, 0, Math.PI * 2);
+          ctx.fill();
         }
       }
 
-      ctx.strokeStyle = `rgba(${this.cachedPrimaryStr}, 0.85)`;
+      // Draw the core last, masking every spoke's flat inner edge for a seamless join.
+      ctx.strokeStyle = ringGrad;
+      ctx.globalAlpha = 0.22;
+      ctx.lineWidth = coreWidth * 3;
+      ctx.beginPath();
+      ctx.arc(cx, cy, baseRadius, 0, Math.PI * 2);
       ctx.stroke();
+
+      ctx.globalAlpha = 0.95;
+      ctx.lineWidth = coreWidth;
+      ctx.beginPath();
+      ctx.arc(cx, cy, baseRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = ringGrad;
+      ctx.stroke();
+    } else if (settings.visualizerStyle === 'waveform') {
+      // A centered, glowing waveform that disappears fully when audio has decayed away.
+      ctx.globalCompositeOperation = 'lighter';
+      const reactiveOpacity = audio.hasAudio ? Math.min(1, Math.max(0, (audio.overall - 0.012) / 0.08)) : 0;
+      if (reactiveOpacity > 0) {
+        const centerY = bottomY - height * 0.1;
+        const step = width / (numBins - 1);
+        const amplitude = Math.min(height * 0.18, width * 0.1);
+        const waveGrad = ctx.createLinearGradient(0, centerY, width, centerY);
+        waveGrad.addColorStop(0, `rgb(${this.cachedPrimaryStr})`);
+        waveGrad.addColorStop(0.5, `rgb(${this.cachedSecondaryStr})`);
+        waveGrad.addColorStop(1, `rgb(${this.cachedPrimaryStr})`);
+
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        for (let i = 0; i < numBins; i++) {
+          const progress = i / (numBins - 1);
+          const value = Math.max(0, Math.min(1, spectrum[i]));
+          const x = i * step;
+          const y = centerY - Math.sin(progress * Math.PI * 3) * value * amplitude;
+
+          if (i === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            const prevProgress = (i - 1) / (numBins - 1);
+            const prevValue = Math.max(0, Math.min(1, spectrum[i - 1]));
+            const prevY = centerY - Math.sin(prevProgress * Math.PI * 3) * prevValue * amplitude;
+            ctx.quadraticCurveTo((x - step * 0.5), prevY, x, y);
+          }
+        }
+
+        // Re-stroke the same path for a wide, soft neon aura and a crisp centre trace.
+        ctx.strokeStyle = waveGrad;
+        ctx.globalAlpha = 0.2 * reactiveOpacity;
+        ctx.lineWidth = Math.max(10, height * 0.012);
+        ctx.stroke();
+
+        ctx.globalAlpha = 0.92 * reactiveOpacity;
+        ctx.lineWidth = Math.max(2.5, height * 0.0032);
+        ctx.stroke();
+      }
     }
 
     ctx.restore();

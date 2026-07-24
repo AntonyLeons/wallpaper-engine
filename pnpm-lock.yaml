@@ -20,6 +20,12 @@ importers:
         specifier: ^8.1.5
         version: 8.1.5(esbuild@0.28.1)
 
+  minecraft-steve:
+    devDependencies:
+      vite:
+        specifier: ^8.1.5
+        version: 8.1.5(esbuild@0.28.1)
+
   valkyrie-aurora:
     devDependencies:
       esbuild:

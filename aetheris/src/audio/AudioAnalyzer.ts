@@ -9,6 +9,9 @@ export interface AudioMetrics {
 
 export class AudioAnalyzer {
   private readonly NUM_BINS = 32;
+  // Separate rates keep beats responsive while letting the visualizer trail off naturally.
+  private readonly ATTACK_RATE = 30;
+  private readonly RELEASE_RATE = 25;
   private rawSpectrumLeft: Float32Array = new Float32Array(this.NUM_BINS);
   private rawSpectrumRight: Float32Array = new Float32Array(this.NUM_BINS);
   private smoothedSpectrum: Float32Array = new Float32Array(this.NUM_BINS);
@@ -56,7 +59,8 @@ export class AudioAnalyzer {
     const now = performance.now();
     const isAudioActive = this.hasReceivedAudio && now - this.lastAudioTime < 2000;
 
-    const smoothFactor = Math.min(1.0, deltaTimeSec * 24.0); // Fast attack / smooth decay
+    const attackFactor = 1 - Math.exp(-this.ATTACK_RATE * deltaTimeSec);
+    const releaseFactor = 1 - Math.exp(-this.RELEASE_RATE * deltaTimeSec);
 
     if (isAudioActive) {
       let bassSum = 0;
@@ -71,8 +75,9 @@ export class AudioAnalyzer {
         // Exponential response curve for dynamic audio punch
         const targetVal = Math.pow(rawVal, 1.2);
 
-        // Smooth interpolation
-        this.smoothedSpectrum[i] += (targetVal - this.smoothedSpectrum[i]) * smoothFactor;
+        // Rise quickly on beats and release gradually so the visualizer does not snap to zero.
+        const smoothingFactor = targetVal > this.smoothedSpectrum[i] ? attackFactor : releaseFactor;
+        this.smoothedSpectrum[i] += (targetVal - this.smoothedSpectrum[i]) * smoothingFactor;
 
         totalSum += this.smoothedSpectrum[i];
 
@@ -94,14 +99,15 @@ export class AudioAnalyzer {
       const pulse = Math.sin(now * 0.0015) * 0.15 + 0.15;
       const wave = Math.cos(now * 0.0025) * 0.1 + 0.1;
 
-      this.bass += (pulse * 0.5 - this.bass) * smoothFactor;
-      this.mid += (wave * 0.4 - this.mid) * smoothFactor;
-      this.treble += (pulse * 0.3 - this.treble) * smoothFactor;
-      this.overall += (pulse * 0.4 - this.overall) * smoothFactor;
+      this.bass += (pulse * 0.5 - this.bass) * releaseFactor;
+      this.mid += (wave * 0.4 - this.mid) * releaseFactor;
+      this.treble += (pulse * 0.3 - this.treble) * releaseFactor;
+      this.overall += (pulse * 0.4 - this.overall) * releaseFactor;
 
       for (let i = 0; i < this.NUM_BINS; i++) {
         const synthFreq = Math.sin(now * 0.002 + i * 0.2) * 0.08 + 0.08;
-        this.smoothedSpectrum[i] += (synthFreq - this.smoothedSpectrum[i]) * smoothFactor;
+        const smoothingFactor = synthFreq > this.smoothedSpectrum[i] ? attackFactor : releaseFactor;
+        this.smoothedSpectrum[i] += (synthFreq - this.smoothedSpectrum[i]) * smoothingFactor;
       }
     }
 
