@@ -1,109 +1,171 @@
 {
-  "title": "Aetheris - Audio Responsive Particle & Clock Wallpaper",
+  "contentrating": "Everyone",
   "description": "A smooth, high-performance web wallpaper with interactive particles, real-time audio spectrum visualizer, customizable digital clock, and multiple color themes.",
   "file": "index.html",
-  "preview": "preview.gif",
-  "type": "web",
-  "visibility": "public",
-  "resolution": "3840x2160",
-  "tags": [
-    "Abstract",
-    "Audio responsive",
-    "Customizable",
-    "Sci-Fi",
-    "Relaxing"
-  ],
   "general": {
-    "supportsaudioprocessing": true,
     "properties": {
-      "schemetype": {
-        "text": "Preset Theme",
-        "type": "combo",
-        "value": "cosmic",
-        "options": [
-          { "label": "Cosmic Nebula", "value": "cosmic" },
-          { "label": "Synthwave Horizon", "value": "synthwave" },
-          { "label": "Quantum Field", "value": "quantum" },
-          { "label": "Obsidian Dark", "value": "obsidian" }
-        ]
-      },
-      "particlecount": {
-        "text": "Particle Density",
-        "type": "slider",
-        "min": 200,
-        "max": 4000,
-        "step": 100,
-        "value": 1500
-      },
-      "particlespeed": {
-        "text": "Motion Speed",
-        "type": "slider",
-        "min": 0.1,
-        "max": 3.0,
-        "step": 0.1,
-        "value": 1.0
-      },
-      "showclock": {
-        "text": "Show Digital Clock",
-        "type": "bool",
-        "value": true
-      },
-      "showseconds": {
-        "text": "Show Clock Seconds",
-        "type": "bool",
-        "value": true
-      },
-      "clockformat": {
-        "text": "Clock Format",
-        "type": "combo",
-        "value": "24h",
-        "options": [
-          { "label": "24-Hour (14:30)", "value": "24h" },
-          { "label": "12-Hour (02:30 PM)", "value": "12h" }
-        ]
-      },
       "audioreactive": {
+        "index": 0,
+        "order": 100,
         "text": "Audio Reactivity",
         "type": "bool",
         "value": true
       },
       "audiosensitivity": {
+        "index": 1,
+        "max": 3,
+        "min": 0.5,
+        "order": 101,
+        "step": 0.1,
         "text": "Audio Sensitivity",
         "type": "slider",
-        "min": 0.5,
-        "max": 3.0,
-        "step": 0.1,
         "value": 1.5
       },
-      "visualizerstyle": {
-        "text": "Audio Visualizer Style",
-        "type": "combo",
-        "value": "bars",
+      "clockformat": {
+        "index": 2,
         "options": [
-          { "label": "Bottom Spectrum Bars", "value": "bars" },
-          { "label": "Circular Pulse Ring", "value": "circular" },
-          { "label": "Flowing Waveform", "value": "waveform" },
-          { "label": "Disabled", "value": "off" }
-        ]
+          {
+            "label": "24-Hour (14:30)",
+            "value": "24h"
+          },
+          {
+            "label": "12-Hour (02:30 PM)",
+            "value": "12h"
+          }
+        ],
+        "order": 102,
+        "text": "Clock Format",
+        "type": "combo",
+        "value": "24h"
       },
-      "taskbaroffset": {
-        "text": "Bottom Margin / Taskbar Offset (px)",
+      "particlecount": {
+        "index": 3,
+        "max": 4000,
+        "min": 200,
+        "order": 103,
+        "step": 100,
+        "text": "Particle Density",
         "type": "slider",
-        "min": 0,
-        "max": 150,
-        "step": 5,
-        "value": 48
+        "value": 1500
+      },
+      "particlespeed": {
+        "index": 4,
+        "max": 3,
+        "min": 0.1,
+        "order": 104,
+        "step": 0.1,
+        "text": "Motion Speed",
+        "type": "slider",
+        "value": 1
       },
       "primarycolor": {
+        "index": 5,
+        "order": 105,
         "text": "Primary Accent Color",
         "type": "color",
         "value": "0.4 0.6 1.0"
       },
+      "schemecolor": {
+        "order": 0,
+        "text": "ui_browse_properties_scheme_color",
+        "type": "color",
+        "value": "0 0 0"
+      },
+      "schemetype": {
+        "index": 6,
+        "options": [
+          {
+            "label": "Cosmic Nebula",
+            "value": "cosmic"
+          },
+          {
+            "label": "Synthwave Horizon",
+            "value": "synthwave"
+          },
+          {
+            "label": "Quantum Field",
+            "value": "quantum"
+          },
+          {
+            "label": "Obsidian Dark",
+            "value": "obsidian"
+          }
+        ],
+        "order": 106,
+        "text": "Preset Theme",
+        "type": "combo",
+        "value": "cosmic"
+      },
       "secondarycolor": {
+        "index": 7,
+        "order": 107,
         "text": "Secondary Accent Color",
         "type": "color",
         "value": "0.9 0.2 0.8"
+      },
+      "showclock": {
+        "index": 8,
+        "order": 108,
+        "text": "Show Digital Clock",
+        "type": "bool",
+        "value": true
+      },
+      "showseconds": {
+        "index": 9,
+        "order": 109,
+        "text": "Show Clock Seconds",
+        "type": "bool",
+        "value": true
+      },
+      "taskbaroffset": {
+        "index": 10,
+        "max": 150,
+        "min": 0,
+        "order": 110,
+        "step": 5,
+        "text": "Bottom Margin / Taskbar Offset (px)",
+        "type": "slider",
+        "value": 48
+      },
+      "visualizerstyle": {
+        "index": 11,
+        "options": [
+          {
+            "label": "Bottom Spectrum Bars",
+            "value": "bars"
+          },
+          {
+            "label": "Circular Pulse Ring",
+            "value": "circular"
+          },
+          {
+            "label": "Flowing Waveform",
+            "value": "waveform"
+          },
+          {
+            "label": "Disabled",
+            "value": "off"
+          }
+        ],
+        "order": 111,
+        "text": "Audio Visualizer Style",
+        "type": "combo",
+        "value": "bars"
       }
-    }
-  }
+    },
+    "supportsaudioprocessing": true
+  },
+  "preview": "preview.gif",
+  "ratingsex": "none",
+  "ratingviolence": "none",
+  "resolution": "3840x2160",
+  "tags": [
+    "Abstract"
+  ],
+  "title": "Aetheris - Audio Responsive Particle & Clock Wallpaper",
+  "type": "web",
+  "version": 0,
+  "visibility": "public",
+  "workshopid": "3770524190",
+  "workshopurl": "steam://url/CommunityFilePage/3770524190"
 }
