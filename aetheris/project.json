@@ -151,6 +151,13 @@
         "text": "Audio Visualizer Style",
         "type": "combo",
         "value": "bars"
+      },
+      "mouseglow": {
+        "index": 12,
+        "order": 112,
+        "text": "Show Mouse Glow",
+        "type": "bool",
+        "value": true
       }
     },
     "supportsaudioprocessing": true

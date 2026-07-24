@@ -39,7 +39,7 @@ export class BackgroundRenderer {
     }
 
     // 2. Draw Interactive Mouse Glow
-    if (mouse.active) {
+    if (settings.showMouseGlow && mouse.active) {
       this.renderMouseGlow(ctx, mouse);
     }
 

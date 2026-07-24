@@ -12,6 +12,7 @@ export interface WallpaperUserProperties {
   audioreactive?: WallpaperProperty;
   audiosensitivity?: WallpaperProperty;
   visualizerstyle?: WallpaperProperty;
+  mouseglow?: WallpaperProperty;
   taskbaroffset?: WallpaperProperty;
   primarycolor?: WallpaperProperty;
   secondarycolor?: WallpaperProperty;

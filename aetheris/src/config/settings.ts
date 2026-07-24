@@ -20,6 +20,7 @@ export interface AppSettings {
   audioReactive: boolean;
   audioSensitivity: number;
   visualizerStyle: VisualizerStyle;
+  showMouseGlow: boolean;
   taskbarOffset: number; // in pixels
   primaryColor: ColorRGB;
   secondaryColor: ColorRGB;
@@ -36,6 +37,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   audioReactive: true,
   audioSensitivity: 1.5,
   visualizerStyle: 'bars',
+  showMouseGlow: true,
   taskbarOffset: 48,
   primaryColor: { r: 102, g: 153, b: 255 }, // #6699ff
   secondaryColor: { r: 230, g: 51, b: 204 }, // #e633cc
@@ -83,6 +85,11 @@ class SettingsManager {
     const format = (params.get('clockformat') || params.get('format'))?.toLowerCase() as ClockFormat;
     if (format && (format === '12h' || format === '24h')) {
       this.currentSettings.clockFormat = format;
+    }
+
+    const mouseGlow = params.get('mouseglow') || params.get('showmouseglow');
+    if (mouseGlow !== null) {
+      this.currentSettings.showMouseGlow = mouseGlow !== 'false' && mouseGlow !== '0';
     }
 
     const offset = params.get('taskbaroffset') || params.get('offset');
@@ -164,6 +171,11 @@ class SettingsManager {
         this.currentSettings.visualizerStyle = vis;
         changed = true;
       }
+    }
+
+    if (properties.mouseglow?.value !== undefined) {
+      this.currentSettings.showMouseGlow = Boolean(properties.mouseglow.value);
+      changed = true;
     }
 
     if (properties.taskbaroffset?.value !== undefined) {
