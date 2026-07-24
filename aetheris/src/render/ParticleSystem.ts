@@ -52,6 +52,11 @@ export class ParticleSystem {
     if (this.pool.length === 0) return null;
     const p = this.pool.pop()!;
 
+    this.resetParticle(p, width, height, settings);
+    return p;
+  }
+
+  private resetParticle(p: Particle, width: number, height: number, settings: AppSettings): void {
     p.x = Math.random() * width;
     p.y = Math.random() * height;
 
@@ -69,8 +74,6 @@ export class ParticleSystem {
     p.life = 0;
     p.hueOffset = Math.random();
     p.speedMult = Math.random() * 0.5 + 0.75;
-
-    return p;
   }
 
   public update(
@@ -154,18 +157,7 @@ export class ParticleSystem {
   }
 
   private recycleParticle(p: Particle, width: number, height: number, settings: AppSettings): void {
-    p.x = Math.random() * width;
-    p.y = Math.random() * height;
-    const angle = Math.random() * Math.PI * 2;
-    const speed = (Math.random() * 20 + 5) * settings.particleSpeed;
-    p.vx = Math.cos(angle) * speed;
-    p.vy = Math.sin(angle) * speed;
-    p.life = 0;
-    p.maxLife = Math.random() * 8 + 4;
-    p.baseSize = Math.random() * 3.5 + 1.0;
-    p.maxAlpha = Math.random() * 0.7 + 0.3;
-    p.alpha = 0;
-    p.hueOffset = Math.random();
+    this.resetParticle(p, width, height, settings);
   }
 
   public render(ctx: CanvasRenderingContext2D, settings: AppSettings): void {

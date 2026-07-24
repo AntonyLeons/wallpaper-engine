@@ -8,6 +8,12 @@ export class BackgroundRenderer {
   private cachedSecondaryStr = '';
   private cachedPrimary: ColorRGB = { r: 0, g: 0, b: 0 };
   private cachedSecondary: ColorRGB = { r: 0, g: 0, b: 0 };
+  private hasCachedColors = false;
+  private spectrumBinCount = 0;
+  private spectrumCos = new Float32Array(0);
+  private spectrumSin = new Float32Array(0);
+  private waveformShape = new Float32Array(0);
+  private spectrumColors: string[] = [];
 
   public render(
     ctx: CanvasRenderingContext2D,
@@ -51,6 +57,7 @@ export class BackgroundRenderer {
 
   private updateColorCache(primary: ColorRGB, secondary: ColorRGB): void {
     if (
+      this.hasCachedColors &&
       this.cachedPrimary.r === primary.r &&
       this.cachedPrimary.g === primary.g &&
       this.cachedPrimary.b === primary.b &&
@@ -65,6 +72,46 @@ export class BackgroundRenderer {
     this.cachedSecondary = { ...secondary };
     this.cachedPrimaryStr = `${primary.r}, ${primary.g}, ${primary.b}`;
     this.cachedSecondaryStr = `${secondary.r}, ${secondary.g}, ${secondary.b}`;
+    this.hasCachedColors = true;
+    this.updateSpectrumColors();
+  }
+
+  private ensureSpectrumCache(numBins: number): void {
+    if (numBins === this.spectrumBinCount) return;
+
+    this.spectrumBinCount = numBins;
+    this.spectrumCos = new Float32Array(numBins);
+    this.spectrumSin = new Float32Array(numBins);
+    this.waveformShape = new Float32Array(numBins);
+
+    const denominator = Math.max(1, numBins - 1);
+    for (let i = 0; i < numBins; i++) {
+      const progress = i / denominator;
+      const angle = progress * Math.PI * 2 - Math.PI / 2;
+      this.spectrumCos[i] = Math.cos(angle);
+      this.spectrumSin[i] = Math.sin(angle);
+      this.waveformShape[i] = Math.sin(progress * Math.PI * 3);
+    }
+
+    this.updateSpectrumColors();
+  }
+
+  private updateSpectrumColors(): void {
+    if (this.spectrumBinCount === 0) return;
+
+    this.spectrumColors = new Array<string>(this.spectrumBinCount);
+    const denominator = Math.max(1, this.spectrumBinCount - 1);
+    for (let i = 0; i < this.spectrumBinCount; i++) {
+      const mix = i / denominator;
+      const r = Math.round(this.cachedPrimary.r + (this.cachedSecondary.r - this.cachedPrimary.r) * mix);
+      const g = Math.round(this.cachedPrimary.g + (this.cachedSecondary.g - this.cachedPrimary.g) * mix);
+      const b = Math.round(this.cachedPrimary.b + (this.cachedSecondary.b - this.cachedPrimary.b) * mix);
+      this.spectrumColors[i] = `${r}, ${g}, ${b}`;
+    }
+  }
+
+  private getReactiveOpacity(audio: AudioMetrics): number {
+    return audio.hasAudio ? Math.min(1, Math.max(0, (audio.overall - 0.012) / 0.08)) : 0;
   }
 
   private renderCosmicTheme(
@@ -266,6 +313,7 @@ export class BackgroundRenderer {
   ): void {
     const spectrum = audio.spectrum;
     const numBins = spectrum.length;
+    this.ensureSpectrumCache(numBins);
 
     // Detect taskbar height dynamically or use configured taskbarOffset
     const autoTaskbarHeight = typeof window !== 'undefined' && window.screen ? Math.max(0, window.screen.height - window.screen.availHeight) : 0;
@@ -325,42 +373,40 @@ export class BackgroundRenderer {
       ctx.fill();
 
       // No reactive spokes at rest; the audio release envelope controls their final fade-out.
-      const reactiveOpacity = audio.hasAudio ? Math.min(1, Math.max(0, (audio.overall - 0.012) / 0.08)) : 0;
+      const reactiveOpacity = this.getReactiveOpacity(audio);
       if (reactiveOpacity > 0) {
         ctx.lineCap = 'butt';
         for (let i = 0; i < numBins; i++) {
           const value = Math.max(0, Math.min(1, spectrum[i]));
-          const angle = (i / numBins) * Math.PI * 2 - Math.PI / 2;
           const length = minDimension * 0.004 + value * maxBarLength;
-          // Start beneath the core ring; it will cover the flat inner edge after the bars render.
-          const barStartRadius = baseRadius - coreWidth * 0.15;
-          const x1 = cx + Math.cos(angle) * barStartRadius;
-          const y1 = cy + Math.sin(angle) * barStartRadius;
-          const x2 = cx + Math.cos(angle) * (barStartRadius + length);
-          const y2 = cy + Math.sin(angle) * (barStartRadius + length);
-          const mix = i / Math.max(1, numBins - 1);
-          const r = Math.round(settings.primaryColor.r + (settings.secondaryColor.r - settings.primaryColor.r) * mix);
-          const g = Math.round(settings.primaryColor.g + (settings.secondaryColor.g - settings.primaryColor.g) * mix);
-          const b = Math.round(settings.primaryColor.b + (settings.secondaryColor.b - settings.primaryColor.b) * mix);
+          // Start at the core's inner edge; the foreground core masks the bar until its outer edge.
+          const barStartRadius = baseRadius - coreWidth * 0.5;
+          const cos = this.spectrumCos[i];
+          const sin = this.spectrumSin[i];
+          const x1 = cx + cos * barStartRadius;
+          const y1 = cy + sin * barStartRadius;
+          const x2 = cx + cos * (barStartRadius + length);
+          const y2 = cy + sin * (barStartRadius + length);
+          const color = this.spectrumColors[i];
 
-          ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.22 * reactiveOpacity})`;
+          ctx.strokeStyle = `rgba(${color}, ${0.22 * reactiveOpacity})`;
           ctx.lineWidth = barWidth * 3.5;
           ctx.beginPath();
           ctx.moveTo(x1, y1);
           ctx.lineTo(x2, y2);
           ctx.stroke();
-          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${0.22 * reactiveOpacity})`;
+          ctx.fillStyle = `rgba(${color}, ${0.22 * reactiveOpacity})`;
           ctx.beginPath();
           ctx.arc(x2, y2, barWidth * 1.75, 0, Math.PI * 2);
           ctx.fill();
 
-          ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${reactiveOpacity})`;
+          ctx.strokeStyle = `rgba(${color}, ${reactiveOpacity})`;
           ctx.lineWidth = barWidth;
           ctx.beginPath();
           ctx.moveTo(x1, y1);
           ctx.lineTo(x2, y2);
           ctx.stroke();
-          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${reactiveOpacity})`;
+          ctx.fillStyle = `rgba(${color}, ${reactiveOpacity})`;
           ctx.beginPath();
           ctx.arc(x2, y2, barWidth * 0.5, 0, Math.PI * 2);
           ctx.fill();
@@ -375,7 +421,7 @@ export class BackgroundRenderer {
       ctx.arc(cx, cy, baseRadius, 0, Math.PI * 2);
       ctx.stroke();
 
-      ctx.globalAlpha = 0.95;
+      ctx.globalAlpha = 1;
       ctx.lineWidth = coreWidth;
       ctx.beginPath();
       ctx.arc(cx, cy, baseRadius, 0, Math.PI * 2);
@@ -384,7 +430,7 @@ export class BackgroundRenderer {
     } else if (settings.visualizerStyle === 'waveform') {
       // A centered, glowing waveform that disappears fully when audio has decayed away.
       ctx.globalCompositeOperation = 'lighter';
-      const reactiveOpacity = audio.hasAudio ? Math.min(1, Math.max(0, (audio.overall - 0.012) / 0.08)) : 0;
+      const reactiveOpacity = this.getReactiveOpacity(audio);
       if (reactiveOpacity > 0) {
         const centerY = bottomY - height * 0.1;
         const step = width / (numBins - 1);
@@ -398,17 +444,15 @@ export class BackgroundRenderer {
         ctx.lineJoin = 'round';
         ctx.beginPath();
         for (let i = 0; i < numBins; i++) {
-          const progress = i / (numBins - 1);
           const value = Math.max(0, Math.min(1, spectrum[i]));
           const x = i * step;
-          const y = centerY - Math.sin(progress * Math.PI * 3) * value * amplitude;
+          const y = centerY - this.waveformShape[i] * value * amplitude;
 
           if (i === 0) {
             ctx.moveTo(x, y);
           } else {
-            const prevProgress = (i - 1) / (numBins - 1);
             const prevValue = Math.max(0, Math.min(1, spectrum[i - 1]));
-            const prevY = centerY - Math.sin(prevProgress * Math.PI * 3) * prevValue * amplitude;
+            const prevY = centerY - this.waveformShape[i - 1] * prevValue * amplitude;
             ctx.quadraticCurveTo((x - step * 0.5), prevY, x, y);
           }
         }
