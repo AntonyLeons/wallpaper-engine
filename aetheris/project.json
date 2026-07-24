@@ -5,24 +5,24 @@
   "general": {
     "properties": {
       "audioreactive": {
-        "index": 0,
-        "order": 100,
+        "index": 6,
+        "order": 106,
         "text": "Audio Reactivity",
         "type": "bool",
         "value": true
       },
       "audiosensitivity": {
-        "index": 1,
+        "index": 7,
         "max": 3,
         "min": 0.5,
-        "order": 101,
+        "order": 107,
         "step": 0.1,
         "text": "Audio Sensitivity",
         "type": "slider",
         "value": 1.5
       },
       "clockformat": {
-        "index": 2,
+        "index": 12,
         "options": [
           {
             "label": "24-Hour (14:30)",
@@ -33,7 +33,7 @@
             "value": "12h"
           }
         ],
-        "order": 102,
+        "order": 112,
         "text": "Clock Format",
         "type": "combo",
         "value": "24h"
@@ -59,8 +59,8 @@
         "value": 1
       },
       "primarycolor": {
-        "index": 5,
-        "order": 105,
+        "index": 1,
+        "order": 101,
         "text": "Primary Accent Color",
         "type": "color",
         "value": "0.4 0.6 1.0"
@@ -72,7 +72,7 @@
         "value": "0 0 0"
       },
       "schemetype": {
-        "index": 6,
+        "index": 0,
         "options": [
           {
             "label": "Cosmic Nebula",
@@ -91,44 +91,44 @@
             "value": "obsidian"
           }
         ],
-        "order": 106,
+        "order": 100,
         "text": "Preset Theme",
         "type": "combo",
         "value": "cosmic"
       },
       "secondarycolor": {
-        "index": 7,
-        "order": 107,
+        "index": 2,
+        "order": 102,
         "text": "Secondary Accent Color",
         "type": "color",
         "value": "0.9 0.2 0.8"
       },
       "showclock": {
-        "index": 8,
-        "order": 108,
+        "index": 10,
+        "order": 110,
         "text": "Show Digital Clock",
         "type": "bool",
         "value": true
       },
       "showseconds": {
-        "index": 9,
-        "order": 109,
+        "index": 11,
+        "order": 111,
         "text": "Show Clock Seconds",
         "type": "bool",
         "value": true
       },
       "taskbaroffset": {
-        "index": 10,
+        "index": 9,
         "max": 150,
         "min": 0,
-        "order": 110,
+        "order": 109,
         "step": 5,
         "text": "Bottom Margin / Taskbar Offset (px)",
         "type": "slider",
         "value": 48
       },
       "visualizerstyle": {
-        "index": 11,
+        "index": 8,
         "options": [
           {
             "label": "Bottom Spectrum Bars",
@@ -147,14 +147,14 @@
             "value": "off"
           }
         ],
-        "order": 111,
+        "order": 108,
         "text": "Audio Visualizer Style",
         "type": "combo",
         "value": "bars"
       },
       "mouseglow": {
-        "index": 12,
-        "order": 112,
+        "index": 5,
+        "order": 105,
         "text": "Show Mouse Glow",
         "type": "bool",
         "value": true
