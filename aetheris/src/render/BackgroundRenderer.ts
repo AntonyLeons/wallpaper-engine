@@ -379,8 +379,8 @@ export class BackgroundRenderer {
         for (let i = 0; i < numBins; i++) {
           const value = Math.max(0, Math.min(1, spectrum[i]));
           const length = minDimension * 0.004 + value * maxBarLength;
-          // Start at the core's inner edge; the foreground core masks the bar until its outer edge.
-          const barStartRadius = baseRadius - coreWidth * 0.5;
+          // Start at the core's outer edge, with the foreground core defining the join.
+          const barStartRadius = baseRadius + coreWidth * 0.5;
           const cos = this.spectrumCos[i];
           const sin = this.spectrumSin[i];
           const x1 = cx + cos * barStartRadius;
