@@ -1,20 +1,14 @@
-import { defineConfig } from 'vite';
-
-export default defineConfig({
+export default {
   base: './',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: false,
-    minify: 'esbuild',
+    minify: 'oxc',
     rollupOptions: {
       output: {
         manualChunks: undefined,
       },
     },
   },
-  server: {
-    port: 3001,
-    open: true,
-  },
-});
+};
