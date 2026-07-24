@@ -26,7 +26,7 @@ interface Particle {
 export class ParticleSystem {
   private particles: Particle[] = [];
   private pool: Particle[] = [];
-  private maxCapacity = 5000;
+  private maxCapacity = 4000;
 
   constructor() {
     // Pre-allocate particle objects in memory pool to avoid GC overhead

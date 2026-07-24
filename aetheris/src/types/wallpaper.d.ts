@@ -15,7 +15,6 @@ export interface WallpaperUserProperties {
   taskbaroffset?: WallpaperProperty;
   primarycolor?: WallpaperProperty;
   secondarycolor?: WallpaperProperty;
-  fpslimit?: WallpaperProperty;
   [key: string]: WallpaperProperty | undefined;
 }
 

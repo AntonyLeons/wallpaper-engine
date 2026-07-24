@@ -39,7 +39,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   taskbarOffset: 48,
   primaryColor: { r: 102, g: 153, b: 255 }, // #6699ff
   secondaryColor: { r: 230, g: 51, b: 204 }, // #e633cc
-  fpsLimit: 60,
+  fpsLimit: 0,
 };
 
 type SettingsChangeListener = (settings: AppSettings) => void;
@@ -114,7 +114,7 @@ class SettingsManager {
     if (properties.particlecount?.value !== undefined) {
       const val = Number(properties.particlecount.value);
       if (!isNaN(val)) {
-        this.currentSettings.particleCount = Math.max(100, Math.min(5000, Math.round(val)));
+        this.currentSettings.particleCount = Math.max(200, Math.min(4000, Math.round(val)));
         changed = true;
       }
     }
@@ -190,20 +190,15 @@ class SettingsManager {
       }
     }
 
-    if (properties.fpslimit?.value !== undefined) {
-      const val = String(properties.fpslimit.value).toLowerCase();
-      if (val === 'unlimited' || val === '0') {
-        this.currentSettings.fpsLimit = 0;
-      } else {
-        const num = parseInt(val, 10);
-        if (!isNaN(num) && num > 0) {
-          this.currentSettings.fpsLimit = Math.min(240, Math.max(15, num));
-        }
-      }
-      changed = true;
-    }
-
     if (changed) {
+      this.notifyListeners();
+    }
+  }
+
+  public setGlobalFps(fps: number): void {
+    const nextFps = Number.isFinite(fps) && fps > 0 ? Math.min(240, Math.max(1, Math.round(fps))) : 0;
+    if (this.currentSettings.fpsLimit !== nextFps) {
+      this.currentSettings.fpsLimit = nextFps;
       this.notifyListeners();
     }
   }

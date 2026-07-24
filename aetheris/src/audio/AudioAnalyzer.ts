@@ -38,15 +38,17 @@ export class AudioAnalyzer {
   }
 
   public onAudioData(audioArray: number[]): void {
-    if (!audioArray || audioArray.length < 64) return;
+    if (!audioArray || audioArray.length < 128) return;
 
     this.hasReceivedAudio = true;
     this.lastAudioTime = performance.now();
 
     for (let i = 0; i < this.NUM_BINS; i++) {
-      // Wallpaper engine audio array format: 0..31 (Left), 32..63 (Right)
-      this.rawSpectrumLeft[i] = Math.max(0, audioArray[i] || 0);
-      this.rawSpectrumRight[i] = Math.max(0, audioArray[i + 32] || 0);
+      // Wallpaper Engine supplies 64 bins per channel: 0..63 left, 64..127 right.
+      // Combine each adjacent pair so the renderer can retain its efficient 32-bin spectrum.
+      const sourceIndex = i * 2;
+      this.rawSpectrumLeft[i] = Math.max(0, ((audioArray[sourceIndex] || 0) + (audioArray[sourceIndex + 1] || 0)) * 0.5);
+      this.rawSpectrumRight[i] = Math.max(0, ((audioArray[sourceIndex + 64] || 0) + (audioArray[sourceIndex + 65] || 0)) * 0.5);
     }
   }
 
