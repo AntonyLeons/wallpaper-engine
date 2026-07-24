@@ -1,80 +1,88 @@
 {
-    "contentrating": "Everyone",
-    "description": "An interactive Minecraft panorama wallpaper with Steve, Alex, Creeper, and Enderman. Select a character, move the mouse to tilt it in 3D, and customise the ambient particle effects.",
-    "file": "index.html",
-    "general": {
-        "properties": {
-            "character": {
-                "index": 0,
-                "options": [
-                    {
-                        "label": "Steve",
-                        "value": "steve"
-                    },
-                    {
-                        "label": "Alex",
-                        "value": "alex"
-                    },
-                    {
-                        "label": "Creeper",
-                        "value": "creeper"
-                    },
-                    {
-                        "label": "Enderman",
-                        "value": "enderman"
-                    }
-                ],
-                "order": 100,
-                "text": "Character",
-                "type": "combo",
-                "value": "steve"
-            },
-            "effects": {
-                "index": 1,
-                "order": 101,
-                "text": "Atmospheric Effects",
-                "type": "bool",
-                "value": true
-            },
-            "effectspeed": {
-                "condition": "effects",
-                "index": 2,
-                "max": 2,
-                "min": 0.2,
-                "order": 102,
-                "step": 0.1,
-                "text": "Effect Speed",
-                "type": "slider",
-                "value": 1
-            },
-            "particlecount": {
-                "condition": "effects",
-                "index": 3,
-                "max": 180,
-                "min": 0,
-                "order": 103,
-                "step": 5,
-                "text": "Ember Density",
-                "type": "slider",
-                "value": 75
-            },
-            "schemecolor": {
-                "order": 0,
-                "text": "ui_browse_properties_scheme_color",
-                "type": "color",
-                "value": "0 0 0"
-            }
-        }
-    },
-    "preview": "preview.gif",
-    "ratingsex": "none",
-    "ratingviolence": "none",
-    "resolution": "3840x2160",
-    "tags": [
-        "Game"
-    ],
-    "title": "Minecraft Characters — 3D Mouse Look",
-    "type": "web",
-    "version": 0,
-    "visibility": "public"
+	"contentrating" : "Everyone",
+	"description" : "An interactive Minecraft panorama wallpaper with Steve, Alex, Creeper, and Enderman. Select a character, move the mouse to tilt it in 3D, and customise the ambient particle effects.",
+	"file" : "index.html",
+	"general" : 
+	{
+		"properties" : 
+		{
+			"character" : 
+			{
+				"index" : 0,
+				"options" : 
+				[
+					{
+						"label" : "Steve",
+						"value" : "steve"
+					},
+					{
+						"label" : "Alex",
+						"value" : "alex"
+					},
+					{
+						"label" : "Creeper",
+						"value" : "creeper"
+					},
+					{
+						"label" : "Enderman",
+						"value" : "enderman"
+					}
+				],
+				"order" : 100,
+				"text" : "Character",
+				"type" : "combo",
+				"value" : "steve"
+			},
+			"effects" : 
+			{
+				"index" : 1,
+				"order" : 101,
+				"text" : "Atmospheric Effects",
+				"type" : "bool",
+				"value" : true
+			},
+			"effectspeed" : 
+			{
+				"condition" : "effects",
+				"index" : 2,
+				"max" : 2,
+				"min" : 0.2,
+				"order" : 102,
+				"step" : 0.1,
+				"text" : "Effect Speed",
+				"type" : "slider",
+				"value" : 1
+			},
+			"particlecount" : 
+			{
+				"condition" : "effects",
+				"index" : 3,
+				"max" : 180,
+				"min" : 0,
+				"order" : 103,
+				"step" : 5,
+				"text" : "Ember Density",
+				"type" : "slider",
+				"value" : 75
+			},
+			"schemecolor" : 
+			{
+				"order" : 0,
+				"text" : "ui_browse_properties_scheme_color",
+				"type" : "color",
+				"value" : "0 0 0"
+			}
+		}
+	},
+	"preview" : "preview.gif",
+	"ratingsex" : "none",
+	"ratingviolence" : "none",
+	"resolution" : "3840x2160",
+	"tags" : [ "Game" ],
+	"title" : "Minecraft Characters — 3D Mouse Look",
+	"type" : "web",
+	"version" : 1,
+	"visibility" : "public",
+	"workshopid" : "3770532089",
+	"workshopurl" : "steam://url/CommunityFilePage/3770532089"
 }
