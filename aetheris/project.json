@@ -1,6 +1,6 @@
 {
   "contentrating": "Everyone",
-  "description": "A smooth, high-performance web wallpaper with interactive particles, real-time audio spectrum visualizer, customizable digital clock, and multiple color themes.",
+  "description": "A smooth, high-performance web wallpaper with interactive particles, real-time audio spectrum visualizer, customizable digital clock, and multiple color themes. Source: https://github.com/AntonyLeons/wallpaper-engine",
   "file": "index.html",
   "general": {
     "properties": {

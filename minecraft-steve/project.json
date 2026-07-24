@@ -1,6 +1,6 @@
 {
 	"contentrating" : "Everyone",
-	"description" : "An interactive Minecraft panorama wallpaper with Steve, Alex, Creeper, and Enderman. Select a character, move the mouse to tilt it in 3D, and customise the ambient particle effects.",
+	"description" : "An interactive Minecraft panorama wallpaper with Steve, Alex, Creeper, and Enderman. Select a character, move the mouse to tilt it in 3D, and customise the ambient particle effects. Source: https://github.com/AntonyLeons/wallpaper-engine",
 	"file" : "index.html",
 	"general" : 
 	{
