@@ -262,6 +262,11 @@ addEventListener('pointermove', (event) => {
   targetYaw = (event.clientX / innerWidth - 0.5) * 0.42;
 }, { passive: true });
 
+window.setMinecraftTargetLook = (pitch, yaw) => {
+  targetPitch = pitch;
+  targetYaw = yaw;
+};
+
 function resize() {
   renderer.setSize(innerWidth, innerHeight, false);
   camera.aspect = innerWidth / innerHeight;
