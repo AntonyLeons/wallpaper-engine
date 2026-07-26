@@ -274,7 +274,7 @@ function smooth(current, target, factor, deltaSeconds) {
 
 function render(now) {
   requestAnimationFrame(render);
-  if (!visible) return;
+  if (!visible && !window.minecraftForceRender) return;
   const fpsLimit = Number(window.minecraftFpsLimit) || 0;
   if (fpsLimit > 0 && now - lastFrame < 1000 / fpsLimit) return;
   const deltaSeconds = Math.min(0.05, (now - lastFrame || 16.67) / 1000);
@@ -289,6 +289,18 @@ function render(now) {
   }
   renderer.render(scene, camera);
 }
+
+window.renderMinecraft3DScene = function() {
+  if (activeUpper) {
+    activeUpper.rotation.x = smooth(activeUpper.rotation.x, targetPitch, 0.07, 0.016);
+    activeUpper.rotation.y = smooth(activeUpper.rotation.y, targetYaw, 0.05, 0.016);
+  }
+  if (activeHead) {
+    activeHead.rotation.x = smooth(activeHead.rotation.x, targetPitch * 0.36, 0.08, 0.016);
+    activeHead.rotation.y = smooth(activeHead.rotation.y, targetYaw * 0.36, 0.08, 0.016);
+  }
+  renderer.render(scene, camera);
+};
 
 addEventListener('resize', resize, { passive: true });
 document.addEventListener('visibilitychange', () => {

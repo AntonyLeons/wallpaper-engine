@@ -80,7 +80,7 @@ function drawEnderAura(deltaSeconds) {
 
 function render(now) {
   requestAnimationFrame(render);
-  if (!visible) {
+  if (!visible && !window.minecraftForceRender) {
     lastFrame = now;
     return;
   }
