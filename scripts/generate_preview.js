@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
-// Read target theme from CLI args (e.g. `node scripts/generate_preview.js aetheris`)
+// Read target theme from CLI args (e.g. `node scripts/generate_preview.js minecraft-steve`)
 const themeName = process.argv[2] || 'aetheris';
 const targetDir = path.join(rootDir, themeName);
 
@@ -132,9 +132,15 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Serve static assets from the target theme directory
-  let reqPath = req.url === '/' ? '/index.html' : req.url;
-  let filePath = path.join(targetDir, reqPath);
+  // Serve static assets from the target theme directory (preferring dist/ if built)
+  const cleanUrl = req.url.split('?')[0];
+  let reqPath = cleanUrl === '/' ? '/index.html' : cleanUrl;
+
+  const distDir = path.join(targetDir, 'dist');
+  let filePath = path.join(distDir, reqPath);
+  if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    filePath = path.join(targetDir, reqPath);
+  }
 
   if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
     let ext = path.extname(filePath).toLowerCase();
@@ -147,11 +153,35 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': contentType });
     fs.createReadStream(filePath).pipe(res);
   } else {
+    console.log('404 Not Found:', req.url, '-> tried:', filePath);
     res.writeHead(404);
     res.end('Not found');
   }
 });
 
-server.listen(9876, () => {
+server.listen(9876, async () => {
   console.log(`Universal Preview Generator Server running on http://localhost:9876 for theme [${themeName}]`);
+  console.log(`Launching Headless Chrome to capture frames for [${themeName}]...`);
+
+  try {
+    const puppeteer = await import('puppeteer');
+    const browser = await puppeteer.default.launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--enable-webgl',
+        '--ignore-gpu-blocklist',
+        '--use-gl=angle',
+        '--use-angle=d3d11'
+      ],
+      defaultViewport: { width: 1280, height: 720 }
+    });
+    const page = await browser.newPage();
+    page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
+    page.on('pageerror', (err) => console.error('PAGE ERROR:', err));
+    await page.goto('http://localhost:9876/?record=true');
+  } catch (err) {
+    console.error('Puppeteer error:', err);
+  }
 });

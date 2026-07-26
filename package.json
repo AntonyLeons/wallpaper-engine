@@ -11,5 +11,8 @@
     "dev:valkyrie": "pnpm --filter wallpaper-engine-valkyrie-aurora dev",
     "build:valkyrie": "pnpm --filter wallpaper-engine-valkyrie-aurora build",
     "generate:preview": "node scripts/generate_preview.js"
+  },
+  "devDependencies": {
+    "puppeteer": "^25.3.0"
   }
 }
