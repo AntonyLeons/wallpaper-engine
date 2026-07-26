@@ -2,7 +2,8 @@ import '../style.css';
 import './steve.js';
 
 const canvas = document.querySelector('#fx');
-const context = canvas.getContext('2d', { alpha: true, desynchronized: true });
+const context = canvas?.getContext('2d', { alpha: true, desynchronized: true });
+const wallpaper = document.querySelector('#wallpaper');
 const settings = { particles: 75, speed: 1, enabled: true, fps: 60 };
 const embers = [];
 const enderAura = [];
@@ -41,6 +42,7 @@ function syncEmbers() {
 }
 
 function resize() {
+  if (!canvas || !context) return;
   width = innerWidth;
   height = innerHeight;
   dpr = Math.min(devicePixelRatio || 1, 1.5);
@@ -80,6 +82,7 @@ function drawEnderAura(deltaSeconds) {
 
 function render(now) {
   requestAnimationFrame(render);
+  if (!context) return;
   if (!visible && !window.minecraftForceRender) {
     lastFrame = now;
     return;
@@ -102,7 +105,7 @@ const previousUserProperties = existingListener.applyUserProperties;
 
 existingListener.applyGeneralProperties = (properties) => {
   previousGeneralProperties?.(properties);
-  if (typeof properties.fps === 'number') {
+  if (Number.isFinite(properties.fps)) {
     settings.fps = Math.max(0, properties.fps);
     window.minecraftFpsLimit = settings.fps;
   }
@@ -112,11 +115,11 @@ existingListener.applyUserProperties = (properties) => {
   previousUserProperties?.(properties);
   if (typeof properties.character?.value === 'string') window.setMinecraftCharacter?.(properties.character.value);
   if (typeof properties.effects?.value === 'boolean') settings.enabled = properties.effects.value;
-  if (typeof properties.particlecount?.value === 'number') {
+  if (Number.isFinite(properties.particlecount?.value)) {
     settings.particles = Math.max(0, Math.min(180, Math.round(properties.particlecount.value)));
     syncEmbers();
   }
-  if (typeof properties.effectspeed?.value === 'number') settings.speed = Math.max(0.2, Math.min(2, properties.effectspeed.value));
+  if (Number.isFinite(properties.effectspeed?.value)) settings.speed = Math.max(0.2, Math.min(2, properties.effectspeed.value));
 };
 
 window.wallpaperPropertyListener = existingListener;
@@ -124,6 +127,7 @@ window.wallpaperPropertyListener = existingListener;
 addEventListener('resize', resize, { passive: true });
 document.addEventListener('visibilitychange', () => {
   visible = !document.hidden;
+  wallpaper?.classList.toggle('is-hidden', !visible);
   lastFrame = performance.now();
 });
 

@@ -12,9 +12,17 @@ const CHARACTER_NAMES = new Set(Object.keys(CHARACTER_URLS));
 const PIXEL_SCALE = 0.15;
 
 const canvas = document.querySelector('#model');
-const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
-renderer.outputColorSpace = THREE.SRGBColorSpace;
+let renderer = null;
+let webglActive = false;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  webglActive = true;
+} catch {
+  // Keep the panorama and Canvas 2D effects usable on systems without WebGL.
+  canvas?.remove();
+}
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
@@ -268,6 +276,8 @@ window.setMinecraftTargetLook = (pitch, yaw) => {
 };
 
 function resize() {
+  if (!renderer) return;
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
   renderer.setSize(innerWidth, innerHeight, false);
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
@@ -279,7 +289,7 @@ function smooth(current, target, factor, deltaSeconds) {
 
 function render(now) {
   requestAnimationFrame(render);
-  if (!visible && !window.minecraftForceRender) return;
+  if (!renderer || !webglActive || (!visible && !window.minecraftForceRender)) return;
   const fpsLimit = Number(window.minecraftFpsLimit) || 0;
   if (fpsLimit > 0 && now - lastFrame < 1000 / fpsLimit) return;
   const deltaSeconds = Math.min(0.05, (now - lastFrame || 16.67) / 1000);
@@ -296,6 +306,7 @@ function render(now) {
 }
 
 window.renderMinecraft3DScene = function() {
+  if (!renderer || !webglActive) return;
   if (activeUpper) {
     activeUpper.rotation.x = smooth(activeUpper.rotation.x, targetPitch, 0.07, 0.016);
     activeUpper.rotation.y = smooth(activeUpper.rotation.y, targetYaw, 0.05, 0.016);
@@ -312,7 +323,17 @@ document.addEventListener('visibilitychange', () => {
   visible = !document.hidden;
   lastFrame = performance.now();
 });
-addEventListener('beforeunload', () => renderer.dispose(), { once: true });
+canvas?.addEventListener('webglcontextlost', (event) => {
+  event.preventDefault();
+  webglActive = false;
+}, { passive: false });
+canvas?.addEventListener('webglcontextrestored', () => {
+  // Three.js restores its internal WebGL resources; resize refreshes its viewport.
+  webglActive = true;
+  renderer?.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
+  resize();
+});
+addEventListener('beforeunload', () => renderer?.dispose(), { once: true });
 
 resize();
 requestAnimationFrame(render);
