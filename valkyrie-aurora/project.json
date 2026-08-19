@@ -1,6 +1,6 @@
 {
-  "title": "Celestial Goddess - Ethereal Anime Parallax & Audio Reactive Wallpaper",
-  "description": "A high-performance PG-13 fantasy anime parallax web wallpaper featuring an Ethereal Goddess bust portrait, moonlit starry night atmosphere, soft idle breathing animation, floating celestial particles, real-time audio spectrum visualization, and customizable UI. Source: https://github.com/AntonyLeons/wallpaper-engine",
+  "title": "Valkyrie Aurora - Northern Night Watch",
+  "description": "A cinematic northern night wallpaper featuring an adult valkyrie beneath the aurora. Designed for low overhead with subtle audio colour response, gentle snow, mouse parallax and an optional minimal clock.",
   "file": "index.html",
   "preview": "preview.gif",
   "type": "web",
@@ -11,27 +11,57 @@
     "Fantasy",
     "Girls",
     "Audio responsive",
-    "Customizable"
+    "Customizable",
+    "Relaxing"
   ],
   "general": {
     "supportsaudioprocessing": true,
     "properties": {
       "schemetype": {
-        "text": "Preset Color Palette",
+        "text": "Aurora Preset Theme",
         "type": "combo",
-        "value": "celestial",
+        "value": "emerald",
         "options": [
-          { "label": "Celestial Gold & Rose", "value": "celestial" },
-          { "label": "Lunar Rose & Lavender", "value": "lunar" },
-          { "label": "Starry Lavender & Sky Blue", "value": "starry" },
-          { "label": "Emerald Jade & Turquoise", "value": "emerald" }
+          { "label": "Emerald Aurora (Nordic Borealis)", "value": "emerald" },
+          { "label": "Celestial Gold (Solar Seraph)", "value": "celestial" },
+          { "label": "Bifrost Twilight (Amethyst & Cyan)", "value": "bifrost" },
+          { "label": "Glacial Ice (Arctic Diamond)", "value": "glacial" },
+          { "label": "Bloodmoon Eclipse (Crimson Flame)", "value": "bloodmoon" }
         ]
       },
-      "parallaxintensity": {
-        "text": "Mouse Parallax Intensity",
+      "visualizerstyle": {
+        "text": "Audio Visualizer Mode",
+        "type": "combo",
+        "value": "aurora_ribbon",
+        "options": [
+          { "label": "Flowing Aurora Ribbon (Signature)", "value": "aurora_ribbon" },
+          { "label": "Sacred Runic Rings", "value": "sacred_rings" },
+          { "label": "Cyber-Valkyrie Equalizer Bars", "value": "bars" },
+          { "label": "Harmonic Waveform Pulse", "value": "wave_pulse" },
+          { "label": "Disabled (Ambient)", "value": "off" }
+        ]
+      },
+      "auroraintensity": {
+        "text": "Aurora Borealis Luminosity",
         "type": "slider",
         "min": 0,
-        "max": 2,
+        "max": 2.5,
+        "step": 0.1,
+        "value": 1.0
+      },
+      "haloglowintensity": {
+        "text": "Valkyrie Halo & Runic Glow",
+        "type": "slider",
+        "min": 0,
+        "max": 2.5,
+        "step": 0.1,
+        "value": 1.0
+      },
+      "parallaxintensity": {
+        "text": "Mouse 3D Parallax Depth",
+        "type": "slider",
+        "min": 0,
+        "max": 2.0,
         "step": 0.1,
         "value": 1.0
       },
@@ -39,28 +69,38 @@
         "text": "Character Idle Breathing Motion",
         "type": "slider",
         "min": 0,
-        "max": 2,
+        "max": 2.0,
         "step": 0.1,
         "value": 1.0
       },
       "particlecount": {
-        "text": "Celestial Sparkle Density",
+        "text": "Celestial Stardust Density",
         "type": "slider",
         "min": 100,
-        "max": 3000,
-        "step": 100,
-        "value": 1200
+        "max": 500,
+        "step": 20,
+        "value": 220
       },
       "particlespeed": {
-        "text": "Particle Speed",
+        "text": "Stardust Motion Speed",
         "type": "slider",
         "min": 0.1,
         "max": 3.0,
         "step": 0.1,
         "value": 1.0
       },
+      "showconstellations": {
+        "text": "Show Cosmic Constellations",
+        "type": "bool",
+        "value": true
+      },
+      "showmeteors": {
+        "text": "Show Shooting Stars (Meteors)",
+        "type": "bool",
+        "value": true
+      },
       "showclock": {
-        "text": "Show Digital Clock Widget",
+        "text": "Show Glassmorphism Clock HUD",
         "type": "bool",
         "value": true
       },
@@ -84,23 +124,12 @@
         "value": true
       },
       "audiosensitivity": {
-        "text": "Audio Reaction Sensitivity",
+        "text": "Audio Reactivity Sensitivity",
         "type": "slider",
         "min": 0.5,
         "max": 3.0,
         "step": 0.1,
         "value": 1.5
-      },
-      "visualizerstyle": {
-        "text": "Audio Spectrum Display Style",
-        "type": "combo",
-        "value": "bars",
-        "options": [
-          { "label": "Bottom Spectrum Bars", "value": "bars" },
-          { "label": "Aura Pulse Glow", "value": "glow_pulse" },
-          { "label": "Floating Spectrum Ring", "value": "ring" },
-          { "label": "Disabled", "value": "off" }
-        ]
       },
       "taskbaroffset": {
         "text": "Bottom Taskbar Margin (px)",
@@ -113,17 +142,17 @@
       "primarycolor": {
         "text": "Primary Accent Color",
         "type": "color",
-        "value": "1.0 0.76 0.33"
+        "value": "0.20 0.96 0.71"
       },
       "secondarycolor": {
         "text": "Secondary Accent Color",
         "type": "color",
-        "value": "0.94 0.43 0.67"
+        "value": "0.15 0.76 1.0"
       },
       "fpslimit": {
         "text": "Target Frame Rate",
         "type": "combo",
-        "value": "60",
+        "value": "30",
         "options": [
           { "label": "30 FPS (Power Saver)", "value": "30" },
           { "label": "60 FPS (Smooth)", "value": "60" },

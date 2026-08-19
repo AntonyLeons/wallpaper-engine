@@ -11,8 +11,8 @@ class ValkyrieApp {
 
   private isRunning = true;
   private lastTimestamp = 0;
-  private targetFps = 60;
-  private frameInterval = 1000 / 60;
+  private targetFps = 30;
+  private frameInterval = 1000 / 30;
 
   constructor() {
     const canvas = document.getElementById('wallpaper-canvas') as HTMLCanvasElement;
@@ -32,7 +32,7 @@ class ValkyrieApp {
   }
 
   private resizeCanvas(): void {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2.0); // Cap DPR to 2.0 for performance
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.25);
     const width = window.innerWidth;
     const height = window.innerHeight;
 
@@ -75,6 +75,18 @@ class ValkyrieApp {
           settingsStore.applyPreset(properties.schemetype.value);
         }
 
+        if (properties.visualizerstyle?.value) {
+          current.visualizerStyle = properties.visualizerstyle.value;
+        }
+
+        if (properties.auroraintensity) {
+          current.auroraIntensity = Math.max(0, Math.min(2.5, properties.auroraintensity.value));
+        }
+
+        if (properties.haloglowintensity) {
+          current.haloGlowIntensity = Math.max(0, Math.min(2.5, properties.haloglowintensity.value));
+        }
+
         if (properties.parallaxintensity) {
           current.parallaxIntensity = Math.max(0, Math.min(2.0, properties.parallaxintensity.value));
         }
@@ -84,11 +96,19 @@ class ValkyrieApp {
         }
 
         if (properties.particlecount) {
-          current.particleCount = Math.max(100, Math.min(3000, properties.particlecount.value));
+          current.particleCount = Math.max(80, Math.min(500, properties.particlecount.value));
         }
 
         if (properties.particlespeed) {
           current.particleSpeed = Math.max(0.1, Math.min(3.0, properties.particlespeed.value));
+        }
+
+        if (properties.showconstellations) {
+          current.showConstellations = properties.showconstellations.value;
+        }
+
+        if (properties.showmeteors) {
+          current.showMeteors = properties.showmeteors.value;
         }
 
         if (properties.showclock) {
@@ -112,10 +132,6 @@ class ValkyrieApp {
 
         if (properties.audiosensitivity) {
           current.audioSensitivity = Math.max(0.5, Math.min(3.0, properties.audiosensitivity.value));
-        }
-
-        if (properties.visualizerstyle?.value) {
-          current.visualizerStyle = properties.visualizerstyle.value;
         }
 
         if (properties.taskbaroffset) {
@@ -172,6 +188,7 @@ class ValkyrieApp {
       this.lastTimestamp = timestamp - (this.targetFps === 0 ? 0 : deltaMs % this.frameInterval);
 
       this.renderer.render(deltaTime);
+      this.clockOverlay.updateAudioStatus(audioProcessor.overall);
     }
 
     requestAnimationFrame((ts) => this.loop(ts));

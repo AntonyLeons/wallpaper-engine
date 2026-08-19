@@ -20,16 +20,20 @@ export interface WallpaperGeneralProperties {
 
 export interface WallpaperUserProperties {
   schemetype?: WallpaperComboProperty;
+  visualizerstyle?: WallpaperComboProperty;
+  auroraintensity?: WallpaperSliderProperty;
+  haloglowintensity?: WallpaperSliderProperty;
   parallaxintensity?: WallpaperSliderProperty;
   breathingintensity?: WallpaperSliderProperty;
   particlecount?: WallpaperSliderProperty;
   particlespeed?: WallpaperSliderProperty;
+  showconstellations?: WallpaperBoolProperty;
+  showmeteors?: WallpaperBoolProperty;
   showclock?: WallpaperBoolProperty;
   showseconds?: WallpaperBoolProperty;
   clockformat?: WallpaperComboProperty;
   audioreactive?: WallpaperBoolProperty;
   audiosensitivity?: WallpaperSliderProperty;
-  visualizerstyle?: WallpaperComboProperty;
   taskbaroffset?: WallpaperSliderProperty;
   primarycolor?: WallpaperColorProperty;
   secondarycolor?: WallpaperColorProperty;
