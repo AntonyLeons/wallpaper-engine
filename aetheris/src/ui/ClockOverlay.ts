@@ -11,6 +11,7 @@ export class ClockOverlay {
   private lastFormattedDate = 'THURSDAY, 23 JUL';
   private mediaTitle = '';
   private mediaArtist = '';
+  private lastPositionKey = '';
 
   constructor() {
     this.createDOM();
@@ -68,6 +69,79 @@ export class ClockOverlay {
     }
   }
 
+  private applyPosition(settings: AppSettings): void {
+    if (!this.containerEl) return;
+
+    const bottomOffset = settings.taskbarOffset + 24;
+
+    switch (settings.clockPosition) {
+      case 'top_left':
+        this.containerEl.style.left = '4%';
+        this.containerEl.style.top = '10%';
+        this.containerEl.style.right = 'auto';
+        this.containerEl.style.bottom = 'auto';
+        this.containerEl.style.transform = 'none';
+        break;
+
+      case 'top_right':
+        this.containerEl.style.left = 'auto';
+        this.containerEl.style.top = '10%';
+        this.containerEl.style.right = '4%';
+        this.containerEl.style.bottom = 'auto';
+        this.containerEl.style.transform = 'none';
+        break;
+
+      case 'center':
+        this.containerEl.style.left = '50%';
+        this.containerEl.style.top = '50%';
+        this.containerEl.style.right = 'auto';
+        this.containerEl.style.bottom = 'auto';
+        this.containerEl.style.transform = 'translate(-50%, -50%)';
+        break;
+
+      case 'bottom_center':
+        this.containerEl.style.left = '50%';
+        this.containerEl.style.top = 'auto';
+        this.containerEl.style.right = 'auto';
+        this.containerEl.style.bottom = `${bottomOffset}px`;
+        this.containerEl.style.transform = 'translateX(-50%)';
+        break;
+
+      case 'bottom_left':
+        this.containerEl.style.left = '4%';
+        this.containerEl.style.top = 'auto';
+        this.containerEl.style.right = 'auto';
+        this.containerEl.style.bottom = `${bottomOffset}px`;
+        this.containerEl.style.transform = 'none';
+        break;
+
+      case 'bottom_right':
+        this.containerEl.style.left = 'auto';
+        this.containerEl.style.top = 'auto';
+        this.containerEl.style.right = '4%';
+        this.containerEl.style.bottom = `${bottomOffset}px`;
+        this.containerEl.style.transform = 'none';
+        break;
+
+      case 'custom':
+        this.containerEl.style.left = `${settings.clockPositionX}%`;
+        this.containerEl.style.top = `${settings.clockPositionY}%`;
+        this.containerEl.style.right = 'auto';
+        this.containerEl.style.bottom = 'auto';
+        this.containerEl.style.transform = `translate(-${settings.clockPositionX}%, -${settings.clockPositionY}%)`;
+        break;
+
+      case 'top_center':
+      default:
+        this.containerEl.style.left = '50%';
+        this.containerEl.style.top = '10%';
+        this.containerEl.style.right = 'auto';
+        this.containerEl.style.bottom = 'auto';
+        this.containerEl.style.transform = 'translateX(-50%)';
+        break;
+    }
+  }
+
   public update(settings: AppSettings): void {
     if (!this.containerEl || !this.timeEl || !this.dateEl) return;
 
@@ -79,6 +153,13 @@ export class ClockOverlay {
 
     this.containerEl.style.opacity = '1';
     this.containerEl.style.pointerEvents = 'auto';
+
+    // Position updates (memoized to avoid DOM thrashing)
+    const posKey = `${settings.clockPosition}_${settings.clockPositionX}_${settings.clockPositionY}_${settings.taskbarOffset}`;
+    if (posKey !== this.lastPositionKey) {
+      this.applyPosition(settings);
+      this.lastPositionKey = posKey;
+    }
 
     const now = new Date();
 
@@ -132,8 +213,51 @@ export class ClockOverlay {
     ctx.save();
 
     const p = settings.primaryColor;
-    const cx = width * 0.5;
-    const cy = height * 0.14;
+    const cardWidth = Math.min(420, width * 0.8);
+    const cardHeight = 110;
+    const bottomOffset = settings.taskbarOffset + 24;
+
+    let cx = width * 0.5;
+    let cy = height * 0.10 + cardHeight * 0.5;
+
+    switch (settings.clockPosition) {
+      case 'top_left':
+        cx = width * 0.04 + cardWidth * 0.5;
+        cy = height * 0.10 + cardHeight * 0.5;
+        break;
+      case 'top_right':
+        cx = width * 0.96 - cardWidth * 0.5;
+        cy = height * 0.10 + cardHeight * 0.5;
+        break;
+      case 'center':
+        cx = width * 0.5;
+        cy = height * 0.5;
+        break;
+      case 'bottom_center':
+        cx = width * 0.5;
+        cy = height - bottomOffset - cardHeight * 0.5;
+        break;
+      case 'bottom_left':
+        cx = width * 0.04 + cardWidth * 0.5;
+        cy = height - bottomOffset - cardHeight * 0.5;
+        break;
+      case 'bottom_right':
+        cx = width * 0.96 - cardWidth * 0.5;
+        cy = height - bottomOffset - cardHeight * 0.5;
+        break;
+      case 'custom':
+        cx = (settings.clockPositionX / 100) * (width - cardWidth) + cardWidth * 0.5;
+        cy = (settings.clockPositionY / 100) * (height - cardHeight) + cardHeight * 0.5;
+        break;
+      case 'top_center':
+      default:
+        cx = width * 0.5;
+        cy = height * 0.10 + cardHeight * 0.5;
+        break;
+    }
+
+    const rx = cx - cardWidth / 2;
+    const ry = cy - cardHeight / 2;
 
     const timeText = this.lastFormattedTime || '14:30:00';
     const dateText = this.lastFormattedDate || 'THURSDAY, 23 JUL';
@@ -142,11 +266,6 @@ export class ClockOverlay {
       : '🎵 Solar Drift — Aetheris';
 
     // Glassmorphism Card Backdrop
-    const cardWidth = Math.min(420, width * 0.8);
-    const cardHeight = 110;
-    const rx = cx - cardWidth / 2;
-    const ry = cy - 25;
-
     ctx.fillStyle = 'rgba(10, 12, 24, 0.45)';
     ctx.beginPath();
     ctx.roundRect(rx, ry, cardWidth, cardHeight, 18);

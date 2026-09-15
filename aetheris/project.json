@@ -22,6 +22,7 @@
         "value": 1.5
       },
       "clockformat": {
+        "condition": "showclock",
         "index": 12,
         "options": [
           {
@@ -37,6 +38,70 @@
         "text": "Clock Format",
         "type": "combo",
         "value": "24h"
+      },
+      "clockposition": {
+        "condition": "showclock",
+        "index": 13,
+        "options": [
+          {
+            "label": "Top Center",
+            "value": "top_center"
+          },
+          {
+            "label": "Top Left",
+            "value": "top_left"
+          },
+          {
+            "label": "Top Right",
+            "value": "top_right"
+          },
+          {
+            "label": "Center",
+            "value": "center"
+          },
+          {
+            "label": "Bottom Center",
+            "value": "bottom_center"
+          },
+          {
+            "label": "Bottom Left",
+            "value": "bottom_left"
+          },
+          {
+            "label": "Bottom Right",
+            "value": "bottom_right"
+          },
+          {
+            "label": "Custom Position",
+            "value": "custom"
+          }
+        ],
+        "order": 113,
+        "text": "Clock Position",
+        "type": "combo",
+        "value": "top_center"
+      },
+      "clockpositionx": {
+        "condition": "clockposition.value == 'custom'",
+        "index": 14,
+        "max": 100,
+        "min": 0,
+        "order": 114,
+        "step": 1,
+        "text": "Clock Horizontal Position (%)",
+        "type": "slider",
+        "value": 50
+      },
+      "clockpositiony": {
+        "condition": "clockposition.value == 'custom'",
+        "index": 15,
+        "max": 100,
+        "min": 0,
+        "order": 115,
+        "step": 1,
+        "text": "Clock Vertical Position (%)",
+        "type": "slider",
+        "value": 10
       },
       "particlecount": {
         "index": 3,
@@ -111,6 +176,7 @@
         "value": true
       },
       "showseconds": {
+        "condition": "showclock",
         "index": 11,
         "order": 111,
         "text": "Show Clock Seconds",

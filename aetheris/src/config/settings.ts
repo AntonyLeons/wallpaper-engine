@@ -3,6 +3,15 @@ import { WallpaperUserProperties } from '../types/wallpaper';
 export type SchemeType = 'cosmic' | 'synthwave' | 'quantum' | 'obsidian';
 export type VisualizerStyle = 'bars' | 'circular' | 'waveform' | 'off';
 export type ClockFormat = '12h' | '24h';
+export type ClockPosition =
+  | 'top_center'
+  | 'top_left'
+  | 'top_right'
+  | 'center'
+  | 'bottom_center'
+  | 'bottom_left'
+  | 'bottom_right'
+  | 'custom';
 
 export interface ColorRGB {
   r: number; // 0..255
@@ -17,6 +26,9 @@ export interface AppSettings {
   showClock: boolean;
   showSeconds: boolean;
   clockFormat: ClockFormat;
+  clockPosition: ClockPosition;
+  clockPositionX: number; // 0..100 (%)
+  clockPositionY: number; // 0..100 (%)
   audioReactive: boolean;
   audioSensitivity: number;
   visualizerStyle: VisualizerStyle;
@@ -34,6 +46,9 @@ export const DEFAULT_SETTINGS: AppSettings = {
   showClock: true,
   showSeconds: true,
   clockFormat: '24h',
+  clockPosition: 'top_center',
+  clockPositionX: 50,
+  clockPositionY: 10,
   audioReactive: true,
   audioSensitivity: 1.5,
   visualizerStyle: 'bars',
@@ -85,6 +100,26 @@ class SettingsManager {
     const format = (params.get('clockformat') || params.get('format'))?.toLowerCase() as ClockFormat;
     if (format && (format === '12h' || format === '24h')) {
       this.currentSettings.clockFormat = format;
+    }
+
+    const pos = (params.get('clockposition') || params.get('clockpos') || params.get('pos'))?.toLowerCase() as ClockPosition;
+    if (
+      pos &&
+      ['top_center', 'top_left', 'top_right', 'center', 'bottom_center', 'bottom_left', 'bottom_right', 'custom'].includes(pos)
+    ) {
+      this.currentSettings.clockPosition = pos;
+    }
+
+    const clockX = params.get('clockpositionx') || params.get('clockx') || params.get('x');
+    if (clockX !== null) {
+      const val = parseFloat(clockX);
+      if (!isNaN(val)) this.currentSettings.clockPositionX = Math.max(0, Math.min(100, val));
+    }
+
+    const clockY = params.get('clockpositiony') || params.get('clocky') || params.get('y');
+    if (clockY !== null) {
+      const val = parseFloat(clockY);
+      if (!isNaN(val)) this.currentSettings.clockPositionY = Math.max(0, Math.min(100, val));
     }
 
     const mouseGlow = params.get('mouseglow') || params.get('showmouseglow');
@@ -148,6 +183,32 @@ class SettingsManager {
       const fmt = String(properties.clockformat.value).toLowerCase() as ClockFormat;
       if (fmt === '12h' || fmt === '24h') {
         this.currentSettings.clockFormat = fmt;
+        changed = true;
+      }
+    }
+
+    if (properties.clockposition?.value !== undefined) {
+      const pos = String(properties.clockposition.value).toLowerCase() as ClockPosition;
+      if (
+        ['top_center', 'top_left', 'top_right', 'center', 'bottom_center', 'bottom_left', 'bottom_right', 'custom'].includes(pos)
+      ) {
+        this.currentSettings.clockPosition = pos;
+        changed = true;
+      }
+    }
+
+    if (properties.clockpositionx?.value !== undefined) {
+      const val = Number(properties.clockpositionx.value);
+      if (!isNaN(val)) {
+        this.currentSettings.clockPositionX = Math.max(0, Math.min(100, val));
+        changed = true;
+      }
+    }
+
+    if (properties.clockpositiony?.value !== undefined) {
+      const val = Number(properties.clockpositiony.value);
+      if (!isNaN(val)) {
+        this.currentSettings.clockPositionY = Math.max(0, Math.min(100, val));
         changed = true;
       }
     }

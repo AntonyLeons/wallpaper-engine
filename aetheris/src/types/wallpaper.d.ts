@@ -9,6 +9,9 @@ export interface WallpaperUserProperties {
   showclock?: WallpaperProperty;
   showseconds?: WallpaperProperty;
   clockformat?: WallpaperProperty;
+  clockposition?: WallpaperProperty;
+  clockpositionx?: WallpaperProperty;
+  clockpositiony?: WallpaperProperty;
   audioreactive?: WallpaperProperty;
   audiosensitivity?: WallpaperProperty;
   visualizerstyle?: WallpaperProperty;
