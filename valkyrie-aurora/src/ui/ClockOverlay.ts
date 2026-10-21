@@ -1,115 +1,27 @@
 import { settingsStore } from '../config/settings';
 
 export class ClockOverlay {
-  private clockContainer: HTMLElement | null = null;
-  private timeEl: HTMLElement | null = null;
-  private ampmEl: HTMLElement | null = null;
-  private dateEl: HTMLElement | null = null;
-  private audioStateTextEl: HTMLElement | null = null;
-  private eqBars: (HTMLElement | null)[] = [];
-
-  private timerId: number | null = null;
-
+  private container = document.getElementById('clock-container');
+  private time = document.getElementById('clock-time');
+  private ampm = document.getElementById('clock-ampm');
+  private date = document.getElementById('clock-date');
+  private dateFormatter = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
   constructor() {
-    this.clockContainer = document.getElementById('clock-container');
-    this.timeEl = document.getElementById('clock-time');
-    this.ampmEl = document.getElementById('clock-ampm');
-    this.dateEl = document.getElementById('clock-date');
-    this.audioStateTextEl = document.getElementById('audio-state-text');
-
-    this.eqBars = [
-      document.getElementById('eq-1'),
-      document.getElementById('eq-2'),
-      document.getElementById('eq-3'),
-      document.getElementById('eq-4'),
-    ];
-
-    this.startClock();
+    this.updateClock();
+    window.setInterval(() => { if (!document.hidden && settingsStore.current.showClock) this.updateClock(); }, 1000);
   }
-
-  public updateVisibility(): void {
-    const settings = settingsStore.current;
-    if (!this.clockContainer) return;
-
-    if (settings.showClock) {
-      this.clockContainer.classList.remove('hidden');
-    } else {
-      this.clockContainer.classList.add('hidden');
-    }
-
+  updateVisibility(): void {
+    this.container?.classList.toggle('hidden', !settingsStore.current.showClock);
     this.updateClock();
   }
-
-  private startClock(): void {
-    this.updateClock();
-    this.timerId = window.setInterval(() => this.updateClock(), 1000);
-  }
-
-  public stopClock(): void {
-    if (this.timerId !== null) {
-      clearInterval(this.timerId);
-      this.timerId = null;
-    }
-  }
-
-  public updateClock(): void {
-    if (!this.timeEl || !this.dateEl) return;
-
-    const settings = settingsStore.current;
+  updateClock(): void {
+    const s = settingsStore.current;
     const now = new Date();
-
-    let hours = now.getHours();
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    const seconds = now.getSeconds().toString().padStart(2, '0');
-    let ampm = '';
-
-    if (settings.clockFormat === '12h') {
-      ampm = hours >= 12 ? 'PM' : 'AM';
-      hours = hours % 12;
-      if (hours === 0) hours = 12;
-    }
-
-    const hoursStr = hours.toString().padStart(2, '0');
-    const timeStr = settings.showSeconds
-      ? `${hoursStr}:${minutes}:${seconds}`
-      : `${hoursStr}:${minutes}`;
-
-    this.timeEl.textContent = timeStr;
-    if (this.ampmEl) {
-      this.ampmEl.textContent = settings.clockFormat === '12h' ? ampm : '';
-    }
-
-    // Date formatting (e.g. "Tuesday, August 18")
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric',
-    };
-    this.dateEl.textContent = now.toLocaleDateString(undefined, options);
-  }
-
-  public updateAudioStatus(audioLevel: number): void {
-    if (this.eqBars.length === 0) return;
-
-    const isLive = audioLevel > 0.02;
-    if (this.audioStateTextEl) {
-      this.audioStateTextEl.textContent = isLive ? 'AUDIO SYNC' : 'VALKYRIE IDLE';
-    }
-
-    for (let i = 0; i < this.eqBars.length; i++) {
-      const bar = this.eqBars[i];
-      if (bar) {
-        const heightPercent = isLive
-          ? Math.min(100, Math.max(15, (audioLevel * (1.2 + i * 0.4) + Math.sin(Date.now() * 0.01 + i) * 0.2) * 100))
-          : 20;
-        bar.style.height = `${heightPercent}%`;
-      }
-    }
-  }
-
-  public setAudioStateText(text: string): void {
-    if (this.audioStateTextEl) {
-      this.audioStateTextEl.textContent = text;
-    }
+    const hours = s.clockFormat === '12h' ? now.getHours() % 12 || 12 : now.getHours();
+    const value = `${String(hours).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}${s.showSeconds ? ':' + String(now.getSeconds()).padStart(2, '0') : ''}`;
+    if (this.time && this.time.textContent !== value) this.time.textContent = value;
+    if (this.ampm) this.ampm.textContent = s.clockFormat === '12h' ? now.getHours() >= 12 ? 'PM' : 'AM' : '';
+    const date = this.dateFormatter.format(now);
+    if (this.date && this.date.textContent !== date) this.date.textContent = date;
   }
 }

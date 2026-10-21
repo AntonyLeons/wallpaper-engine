@@ -1,8 +1,8 @@
 {
-  "title": "Valkyrie Aurora - Northern Night Watch",
-  "description": "A cinematic procedural northern night wallpaper with aurora curtains, moonlit fjord and mountain ridges. Original canvas art with no external assets. Designed for low overhead with subtle audio colour response, gentle stardust, mouse parallax and an optional minimal clock.",
+  "title": "Valkyrie Aurora - Moonlit Reverie",
+  "description": "An original silver-haired anime heroine beneath the northern lights. A painted midnight lake, drifting stardust, delicate mouse drift, restrained audio light and an optional minimal clock. All artwork is bundled locally. Lightweight capped-resolution effects, 30 FPS default and reduced-motion support.",
   "file": "index.html",
-  "preview": "preview.gif",
+  "preview": "preview.jpg",
   "type": "web",
   "visibility": "public",
   "resolution": "3840x2160",
@@ -22,72 +22,102 @@
         "type": "combo",
         "value": "emerald",
         "options": [
-          { "label": "Emerald Aurora (Nordic Borealis)", "value": "emerald" },
-          { "label": "Celestial Gold (Solar Seraph)", "value": "celestial" },
-          { "label": "Bifrost Twilight (Amethyst & Cyan)", "value": "bifrost" },
-          { "label": "Glacial Ice (Arctic Diamond)", "value": "glacial" },
-          { "label": "Bloodmoon Eclipse (Crimson Flame)", "value": "bloodmoon" }
+          {
+            "label": "Emerald Aurora (Nordic Borealis)",
+            "value": "emerald"
+          },
+          {
+            "label": "Celestial Gold (Solar Seraph)",
+            "value": "celestial"
+          },
+          {
+            "label": "Bifrost Twilight (Amethyst & Cyan)",
+            "value": "bifrost"
+          },
+          {
+            "label": "Glacial Ice (Arctic Diamond)",
+            "value": "glacial"
+          },
+          {
+            "label": "Bloodmoon Eclipse (Crimson Flame)",
+            "value": "bloodmoon"
+          }
         ]
       },
       "visualizerstyle": {
-        "text": "Audio Visualizer Mode",
+        "text": "Subtle Lake Audio Accent",
         "type": "combo",
         "value": "aurora_ribbon",
         "options": [
-          { "label": "Flowing Aurora Ribbon (Signature)", "value": "aurora_ribbon" },
-          { "label": "Sacred Runic Rings", "value": "sacred_rings" },
-          { "label": "Cyber-Valkyrie Equalizer Bars", "value": "bars" },
-          { "label": "Harmonic Waveform Pulse", "value": "wave_pulse" },
-          { "label": "Disabled (Ambient)", "value": "off" }
+          {
+            "label": "Flowing Aurora Ribbon (Signature)",
+            "value": "aurora_ribbon"
+          },
+          {
+            "label": "Sacred Runic Rings",
+            "value": "sacred_rings"
+          },
+          {
+            "label": "Cyber-Valkyrie Equalizer Bars",
+            "value": "bars"
+          },
+          {
+            "label": "Harmonic Waveform Pulse",
+            "value": "wave_pulse"
+          },
+          {
+            "label": "Disabled (Ambient)",
+            "value": "off"
+          }
         ]
       },
       "auroraintensity": {
-        "text": "Aurora Borealis Luminosity",
+        "text": "Stardust Brightness",
         "type": "slider",
         "min": 0,
         "max": 2.5,
         "step": 0.1,
-        "value": 1.0
+        "value": 1
       },
       "haloglowintensity": {
-        "text": "Valkyrie Halo & Runic Glow",
+        "text": "Audio Accent Brightness",
         "type": "slider",
         "min": 0,
         "max": 2.5,
         "step": 0.1,
-        "value": 1.0
+        "value": 1
       },
       "parallaxintensity": {
-        "text": "Mouse 3D Parallax Depth",
+        "text": "Mouse Parallax",
         "type": "slider",
         "min": 0,
-        "max": 2.0,
+        "max": 2,
         "step": 0.1,
-        "value": 1.0
+        "value": 1
       },
       "breathingintensity": {
-        "text": "Character Idle Breathing Motion",
+        "text": "Gentle Scene Drift",
         "type": "slider",
         "min": 0,
-        "max": 2.0,
+        "max": 2,
         "step": 0.1,
-        "value": 1.0
+        "value": 1
       },
       "particlecount": {
         "text": "Celestial Stardust Density",
         "type": "slider",
-        "min": 100,
+        "min": 0,
         "max": 500,
         "step": 20,
-        "value": 220
+        "value": 120
       },
       "particlespeed": {
         "text": "Stardust Motion Speed",
         "type": "slider",
         "min": 0.1,
-        "max": 3.0,
+        "max": 3,
         "step": 0.1,
-        "value": 1.0
+        "value": 1
       },
       "showconstellations": {
         "text": "Show Cosmic Constellations",
@@ -100,22 +130,28 @@
         "value": true
       },
       "showclock": {
-        "text": "Show Glassmorphism Clock HUD",
+        "text": "Show Minimal Clock",
         "type": "bool",
         "value": true
       },
       "showseconds": {
         "text": "Show Seconds in Clock",
         "type": "bool",
-        "value": true
+        "value": false
       },
       "clockformat": {
         "text": "Clock Time Format",
         "type": "combo",
         "value": "24h",
         "options": [
-          { "label": "24-Hour (14:30)", "value": "24h" },
-          { "label": "12-Hour (02:30 PM)", "value": "12h" }
+          {
+            "label": "24-Hour (14:30)",
+            "value": "24h"
+          },
+          {
+            "label": "12-Hour (02:30 PM)",
+            "value": "12h"
+          }
         ]
       },
       "audioreactive": {
@@ -127,7 +163,7 @@
         "text": "Audio Reactivity Sensitivity",
         "type": "slider",
         "min": 0.5,
-        "max": 3.0,
+        "max": 3,
         "step": 0.1,
         "value": 1.5
       },
@@ -154,10 +190,22 @@
         "type": "combo",
         "value": "30",
         "options": [
-          { "label": "30 FPS (Power Saver)", "value": "30" },
-          { "label": "60 FPS (Smooth)", "value": "60" },
-          { "label": "120 FPS (Ultra)", "value": "120" },
-          { "label": "Unlimited", "value": "unlimited" }
+          {
+            "label": "30 FPS (Power Saver)",
+            "value": "30"
+          },
+          {
+            "label": "60 FPS (Smooth)",
+            "value": "60"
+          },
+          {
+            "label": "120 FPS (Ultra)",
+            "value": "120"
+          },
+          {
+            "label": "Unlimited",
+            "value": "unlimited"
+          }
         ]
       }
     }

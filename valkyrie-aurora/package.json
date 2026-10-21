@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "postbuild": "node -e \"import('fs').then(fs => { fs.copyFileSync('project.json', 'dist/project.json'); if (fs.existsSync('preview.gif')) fs.copyFileSync('preview.gif', 'dist/preview.gif'); })\"",
+    "postbuild": "node package-wallpaper.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },

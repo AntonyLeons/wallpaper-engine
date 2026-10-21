@@ -1,46 +1,8 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Valkyrie Aurora - Ethereal Goddess & Audio Reactive Wallpaper" />
-    <title>Valkyrie Aurora - Ethereal Goddess Wallpaper</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>" />
-    <link rel="stylesheet" href="./src/style.css" />
-  </head>
-  <body>
-    <!-- Background & Render Canvas -->
-    <canvas id="wallpaper-canvas"></canvas>
-
-    <!-- Minimal information overlay -->
-    <aside id="clock-container" class="clock-overlay" aria-label="Clock and Audio Status HUD">
-      <div class="hud-rune-header">
-        <span class="rune-accent">NORTH // 67°N</span>
-        <span class="hud-badge">AURORA</span>
-      </div>
-
-      <div class="clock-time-wrapper">
-        <h1 id="clock-time" class="clock-time">00:00:00</h1>
-        <span id="clock-ampm" class="clock-ampm"></span>
-      </div>
-
-      <div id="clock-date" class="clock-date">Thursday, July 23</div>
-
-      <div class="hud-audio-bar">
-        <div class="pulse-indicator">
-          <span class="pulse-dot"></span>
-          <span class="pulse-ring"></span>
-        </div>
-        <span id="audio-state-text" class="audio-state-label">NIGHT WATCH</span>
-        <div class="mini-eq-bars">
-          <span class="eq-bar" id="eq-1"></span>
-          <span class="eq-bar" id="eq-2"></span>
-          <span class="eq-bar" id="eq-3"></span>
-          <span class="eq-bar" id="eq-4"></span>
-        </div>
-      </div>
-    </aside>
-
-    <script type="module" src="./src/main.ts"></script>
-  </body>
-</html>
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="A quiet moment beneath the northern lights." /><title>Valkyrie Aurora · Moonlit Reverie</title><link rel="icon" href="data:," /><link rel="stylesheet" href="./src/style.css" /></head>
+<body>
+<div id="scene" aria-hidden="true"><img id="artwork" src="./moonlit-reverie.webp" alt="" /></div><div class="shade" aria-hidden="true"></div><canvas id="wallpaper-canvas" aria-hidden="true"></canvas>
+<aside id="clock-container" class="clock-overlay" aria-label="Local time"><div class="eyebrow"><span class="star">✧</span> MOONLIT REVERIE</div><div class="clock-row"><time id="clock-time"></time><span id="clock-ampm"></span></div><div id="clock-date"></div><div class="signature"><span></span> beneath the northern lights</div></aside>
+<script type="module" src="./src/main.ts"></script>
+</body></html>

@@ -6,14 +6,16 @@ export class AudioProcessor {
   public mid = 0;
   public treble = 0;
   public overall = 0;
+  public lastReceived = -Infinity;
 
   private smoothingFactor = 0.35; // Exponential moving average factor
 
   public processAudioData(audioData: number[]): void {
     if (!Array.isArray(audioData) || audioData.length < 128) return;
+    this.lastReceived = performance.now();
 
     for (let i = 0; i < 128; i++) {
-      const val = typeof audioData[i] === 'number' ? Math.max(0, Math.min(1, audioData[i])) : 0;
+      const val = Number.isFinite(audioData[i]) ? Math.max(0, Math.min(1, audioData[i])) : 0;
       this.rawAudio[i] = val;
     }
 

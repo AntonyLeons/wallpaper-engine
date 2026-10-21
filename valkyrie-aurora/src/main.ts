@@ -2,202 +2,87 @@ import { settingsStore, SettingsStore } from './config/settings';
 import { audioProcessor } from './audio/AudioProcessor';
 import { LayerRenderer } from './render/LayerRenderer';
 import { ClockOverlay } from './ui/ClockOverlay';
-import type { WallpaperUserProperties, WallpaperGeneralProperties } from './types/wallpaper';
+import type { WallpaperUserProperties } from './types/wallpaper';
 
-class ValkyrieApp {
-  private canvas: HTMLCanvasElement;
-  private renderer: LayerRenderer;
-  private clockOverlay: ClockOverlay;
+const settings = settingsStore.current;
+const clock = new ClockOverlay();
+const canvas = document.getElementById('wallpaper-canvas') as HTMLCanvasElement;
+const renderer = new LayerRenderer(canvas);
+let engineFps = 0;
+let frameId = 0;
+let last = 0;
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+const finite = (v: unknown, min: number, max: number, fallback: number): number =>
+  typeof v === 'number' && Number.isFinite(v) ? Math.max(min, Math.min(max, v)) : fallback;
 
-  private isRunning = true;
-  private lastTimestamp = 0;
-  private targetFps = 30;
-  private frameInterval = 1000 / 30;
-
-  constructor() {
-    const canvas = document.getElementById('wallpaper-canvas') as HTMLCanvasElement;
-    if (!canvas) {
-      throw new Error('Canvas element #wallpaper-canvas not found');
-    }
-    this.canvas = canvas;
-
-    this.resizeCanvas();
-    this.renderer = new LayerRenderer(this.canvas);
-    this.clockOverlay = new ClockOverlay();
-
-    this.setupListeners();
-    this.setupWallpaperEngineAPI();
-
-    this.startLoop();
+function applyProperties(p: WallpaperUserProperties): void {
+  if (!p || typeof p !== 'object') return;
+  if (p.schemetype && typeof p.schemetype.value === 'string') settingsStore.applyPreset(p.schemetype.value);
+  if (p.visualizerstyle && ['aurora_ribbon', 'sacred_rings', 'bars', 'wave_pulse', 'off'].includes(p.visualizerstyle.value)) settings.visualizerStyle = p.visualizerstyle.value;
+  if (p.clockformat && ['12h', '24h'].includes(p.clockformat.value)) settings.clockFormat = p.clockformat.value;
+  if (p.fpslimit) {
+    const value = p.fpslimit.value;
+    if (['30', '60', '120', 'unlimited'].includes(value)) settings.fpsLimit = value === 'unlimited' ? 0 : Number(value);
   }
-
-  private resizeCanvas(): void {
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.25);
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-
-    this.canvas.width = width * dpr;
-    this.canvas.height = height * dpr;
-    this.canvas.style.width = `${width}px`;
-    this.canvas.style.height = `${height}px`;
+  const sliders = [
+    ['auroraintensity', 'auroraIntensity', 0, 2.5], ['haloglowintensity', 'haloGlowIntensity', 0, 2.5],
+    ['parallaxintensity', 'parallaxIntensity', 0, 2], ['breathingintensity', 'breathingIntensity', 0, 2],
+    ['particlecount', 'particleCount', 0, 500], ['particlespeed', 'particleSpeed', .1, 3],
+    ['audiosensitivity', 'audioSensitivity', .5, 3], ['taskbaroffset', 'taskbarOffset', 0, 150],
+  ] as const;
+  for (const [key, setting, min, max] of sliders) {
+    if (p[key]) settings[setting] = finite(p[key]?.value, min, max, settings[setting]);
   }
-
-  private setupListeners(): void {
-    window.addEventListener('resize', () => {
-      this.resizeCanvas();
-    });
-
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        this.isRunning = false;
-      } else {
-        this.isRunning = true;
-        this.lastTimestamp = performance.now();
-        this.loop(performance.now());
-      }
-    });
+  const bools = [
+    ['showconstellations', 'showConstellations'], ['showmeteors', 'showMeteors'],
+    ['showclock', 'showClock'], ['showseconds', 'showSeconds'], ['audioreactive', 'audioReactive'],
+  ] as const;
+  for (const [key, setting] of bools) if (typeof p[key]?.value === 'boolean') settings[setting] = p[key]!.value;
+  for (const [key, setting] of [['primarycolor', 'primaryColor'], ['secondarycolor', 'secondaryColor']] as const) {
+    const color = SettingsStore.parseWallpaperColor(p[key]?.value);
+    if (color) settings[setting] = color;
   }
-
-  private setupWallpaperEngineAPI(): void {
-    // Wallpaper Engine Property Listener
-    window.wallpaperPropertyListener = {
-      applyGeneralProperties: (properties: WallpaperGeneralProperties) => {
-        if (typeof properties.fps === 'number' && properties.fps > 0) {
-          this.targetFps = properties.fps;
-          this.frameInterval = 1000 / this.targetFps;
-        }
-      },
-
-      applyUserProperties: (properties: WallpaperUserProperties) => {
-        const current = settingsStore.current;
-
-        if (properties.schemetype?.value) {
-          settingsStore.applyPreset(properties.schemetype.value);
-        }
-
-        if (properties.visualizerstyle?.value) {
-          current.visualizerStyle = properties.visualizerstyle.value;
-        }
-
-        if (properties.auroraintensity) {
-          current.auroraIntensity = Math.max(0, Math.min(2.5, properties.auroraintensity.value));
-        }
-
-        if (properties.haloglowintensity) {
-          current.haloGlowIntensity = Math.max(0, Math.min(2.5, properties.haloglowintensity.value));
-        }
-
-        if (properties.parallaxintensity) {
-          current.parallaxIntensity = Math.max(0, Math.min(2.0, properties.parallaxintensity.value));
-        }
-
-        if (properties.breathingintensity) {
-          current.breathingIntensity = Math.max(0, Math.min(2.0, properties.breathingintensity.value));
-        }
-
-        if (properties.particlecount) {
-          current.particleCount = Math.max(80, Math.min(500, properties.particlecount.value));
-        }
-
-        if (properties.particlespeed) {
-          current.particleSpeed = Math.max(0.1, Math.min(3.0, properties.particlespeed.value));
-        }
-
-        if (properties.showconstellations) {
-          current.showConstellations = properties.showconstellations.value;
-        }
-
-        if (properties.showmeteors) {
-          current.showMeteors = properties.showmeteors.value;
-        }
-
-        if (properties.showclock) {
-          current.showClock = properties.showclock.value;
-          this.clockOverlay.updateVisibility();
-        }
-
-        if (properties.showseconds) {
-          current.showSeconds = properties.showseconds.value;
-          this.clockOverlay.updateClock();
-        }
-
-        if (properties.clockformat?.value) {
-          current.clockFormat = properties.clockformat.value;
-          this.clockOverlay.updateClock();
-        }
-
-        if (properties.audioreactive) {
-          current.audioReactive = properties.audioreactive.value;
-        }
-
-        if (properties.audiosensitivity) {
-          current.audioSensitivity = Math.max(0.5, Math.min(3.0, properties.audiosensitivity.value));
-        }
-
-        if (properties.taskbaroffset) {
-          current.taskbarOffset = Math.max(0, Math.min(150, properties.taskbaroffset.value));
-        }
-
-        if (properties.primarycolor) {
-          const col = SettingsStore.parseWallpaperColor(properties.primarycolor.value);
-          if (col) current.primaryColor = col;
-        }
-
-        if (properties.secondarycolor) {
-          const col = SettingsStore.parseWallpaperColor(properties.secondarycolor.value);
-          if (col) current.secondaryColor = col;
-        }
-
-        if (properties.fpslimit?.value) {
-          if (properties.fpslimit.value === 'unlimited') {
-            this.targetFps = 0;
-            this.frameInterval = 0;
-          } else {
-            const parsed = parseInt(properties.fpslimit.value, 10);
-            if (!isNaN(parsed) && parsed > 0) {
-              this.targetFps = parsed;
-              this.frameInterval = 1000 / this.targetFps;
-            }
-          }
-        }
-
-        settingsStore.updateCSSVariables();
-      },
-    };
-
-    // Wallpaper Engine Audio Register Listener
-    if (typeof window.wallpaperRegisterAudioListener === 'function') {
-      window.wallpaperRegisterAudioListener((audioData: number[]) => {
-        audioProcessor.processAudioData(audioData);
-      });
-    }
-  }
-
-  private startLoop(): void {
-    this.lastTimestamp = performance.now();
-    requestAnimationFrame((ts) => this.loop(ts));
-  }
-
-  private loop(timestamp: number): void {
-    if (!this.isRunning) return;
-
-    const deltaMs = timestamp - this.lastTimestamp;
-
-    if (this.targetFps === 0 || deltaMs >= this.frameInterval) {
-      const deltaTime = Math.min(deltaMs / 1000, 0.1); // Clamp delta time to avoid large jumps
-      this.lastTimestamp = timestamp - (this.targetFps === 0 ? 0 : deltaMs % this.frameInterval);
-
-      this.renderer.render(deltaTime);
-      this.clockOverlay.updateAudioStatus(audioProcessor.overall);
-    }
-
-    requestAnimationFrame((ts) => this.loop(ts));
-  }
+  settingsStore.updateCSSVariables();
+  clock.updateVisibility();
+  renderer.render(0);
 }
 
-// Initialize application on DOM ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => new ValkyrieApp());
-} else {
-  new ValkyrieApp();
+// Installed during module evaluation, independent of image decoding and load events.
+const previous = window.wallpaperPropertyListener;
+window.wallpaperPropertyListener = {
+  ...previous,
+  applyGeneralProperties(p) {
+    previous?.applyGeneralProperties?.(p);
+    if (p && typeof p.fps === 'number' && Number.isFinite(p.fps)) engineFps = Math.max(0, p.fps);
+  },
+  applyUserProperties(p) { previous?.applyUserProperties?.(p); applyProperties(p); },
+};
+window.wallpaperRegisterAudioListener?.(data => audioProcessor.processAudioData(data));
+
+function loop(now: number): void {
+  frameId = 0;
+  if (document.hidden || reducedMotion.matches) return;
+  const fps = Math.min(settings.fpsLimit || Infinity, engineFps || Infinity);
+  const interval = Number.isFinite(fps) ? 1000 / fps : 0;
+  const elapsed = now - last;
+  if (!last || elapsed >= interval - .3) {
+    renderer.render(last ? Math.min(elapsed / 1000, .1) : 0);
+    last = now - (interval ? elapsed % interval : 0);
+  }
+  frameId = requestAnimationFrame(loop);
 }
+function resume(): void {
+  cancelAnimationFrame(frameId);
+  frameId = 0; last = 0;
+  if (document.hidden) return;
+  if (!reducedMotion.matches) frameId = requestAnimationFrame(loop);
+  else renderer.render(0);
+}
+window.addEventListener('resize', () => { renderer.resize(); renderer.render(0); });
+document.addEventListener('visibilitychange', resume);
+reducedMotion.addEventListener('change', resume);
+const artwork = document.getElementById('artwork') as HTMLImageElement;
+artwork.addEventListener('error', () => { artwork.style.display = 'none'; }, { once: true });
+settingsStore.updateCSSVariables();
+clock.updateVisibility();
+resume();

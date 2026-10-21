@@ -54,28 +54,28 @@ export class SettingsStore {
     schemeType: 'emerald',
     parallaxIntensity: 1.0,
     breathingIntensity: 1.0,
-    particleCount: 220,
+    particleCount: 120,
     particleSpeed: 1.0,
     auroraIntensity: 1.0,
     haloGlowIntensity: 1.0,
     showConstellations: true,
     showMeteors: true,
     showClock: true,
-    showSeconds: true,
+    showSeconds: false,
     clockFormat: '24h',
     audioReactive: true,
     audioSensitivity: 1.5,
     visualizerStyle: 'aurora_ribbon',
     taskbarOffset: 48,
-    primaryColor: { r: 52, g: 245, b: 180 },
-    secondaryColor: { r: 38, g: 195, b: 255 },
+    primaryColor: { r: 51, g: 245, b: 181 },
+    secondaryColor: { r: 38, g: 194, b: 255 },
     fpsLimit: 30,
   };
 
   public static parseWallpaperColor(value?: string): ColorRGB | null {
-    if (!value) return null;
+    if (typeof value !== 'string' || !value) return null;
     const parts = value.trim().split(/\s+/).map(Number);
-    if (parts.length < 3 || parts.some(isNaN)) return null;
+    if (parts.length !== 3 || parts.some(v => !Number.isFinite(v))) return null;
 
     return {
       r: Math.min(255, Math.max(0, Math.round(parts[0] * 255))),
@@ -85,6 +85,7 @@ export class SettingsStore {
   }
 
   public applyPreset(presetKey: string): void {
+    if (!Object.hasOwn(PRESET_THEMES, presetKey)) return;
     const preset = PRESET_THEMES[presetKey];
     if (preset) {
       this.current.schemeType = presetKey;
