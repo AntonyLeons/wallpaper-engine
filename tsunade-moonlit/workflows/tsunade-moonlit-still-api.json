@@ -1,0 +1,45 @@
+{
+  "2": {
+    "inputs": {
+      "quality": "ULTRA",
+      "image_encoding": "8-bit RGB",
+      "images": [
+        "1",
+        0
+      ],
+      "resize_type": "scale by multiplier",
+      "strength": 1.0,
+      "resize_type.scale": 2.5
+    },
+    "class_type": "RTXVideoSuperResolution"
+  },
+  "4": {
+    "inputs": {
+      "images": [
+        "3",
+        0
+      ],
+      "filename_prefix": "wallpapers/Tsunade_Moonlit_4K_still"
+    },
+    "class_type": "SaveImage"
+  },
+  "1": {
+    "inputs": {
+      "image": "tsunade-moonlit-source.png"
+    },
+    "class_type": "LoadImage"
+  },
+  "3": {
+    "inputs": {
+      "upscale_method": "lanczos",
+      "crop": "center",
+      "width": 3840,
+      "image": [
+        "2",
+        0
+      ],
+      "height": 2160
+    },
+    "class_type": "ImageScale"
+  }
+}

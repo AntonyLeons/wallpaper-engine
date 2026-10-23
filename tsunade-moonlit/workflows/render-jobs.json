@@ -1,0 +1,15 @@
+{
+  "requested_resolution": [
+    3840,
+    2160
+  ],
+  "still_prompt_id": "3a2cd407-2ff4-4da0-a308-2b5f4c5b2390",
+  "video_prompt_id": "5c1f8526-ce41-4935-b87d-fdd479b1630f",
+  "source_generator": "Built-in imagegen",
+  "source_resolution": [
+    1672,
+    941
+  ],
+  "animation_generator": "Local ComfyUI MiniMax H3, 8-step Turbo",
+  "character": "Tsunade (adult appearance)"
+}

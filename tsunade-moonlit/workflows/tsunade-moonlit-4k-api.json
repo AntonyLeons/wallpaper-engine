@@ -1,0 +1,205 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "2": {
+    "class_type": "LoraLoaderModelOnly",
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "lora_name": "minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors",
+      "strength_model": 1.0
+    }
+  },
+  "3": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "type": "minimax",
+      "device": "default"
+    }
+  },
+  "4": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "minimax_h3_video_vae_fp16.safetensors"
+    }
+  },
+  "5": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "tsunade-moonlit-source.png"
+    }
+  },
+  "6": {
+    "class_type": "ImageScale",
+    "inputs": {
+      "image": [
+        "5",
+        0
+      ],
+      "upscale_method": "lanczos",
+      "width": 1344,
+      "height": 768,
+      "crop": "center"
+    }
+  },
+  "7": {
+    "class_type": "MiniMaxH3ImageToVideo",
+    "inputs": {
+      "clip": [
+        "3",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ],
+      "first_frame": [
+        "6",
+        0
+      ],
+      "last_frame": [
+        "6",
+        0
+      ],
+      "prompt": "A polished anime film shot of adult Tsunade relaxing on a wooden veranda above a moonlit Japanese village. Preserve her face, mature figure, gray wrap blouse, green haori and the detailed illustrated art style exactly. Extremely subtle motion: a few cherry petals drift through the air, blonde hair tips and haori edge sway gently, lantern light flickers softly and water reflections shimmer. She holds her relaxed pose with one soft blink and very slight natural breathing. Fixed locked camera; no zoom, no cuts, no walking, no talking. Calm elegant atmospheric desktop wallpaper. Motion eases back to the original pose at the end. Keep clothing in place.",
+      "width": 1344,
+      "height": 768,
+      "length": 124
+    }
+  },
+  "8": {
+    "class_type": "BasicGuider",
+    "inputs": {
+      "model": [
+        "2",
+        0
+      ],
+      "conditioning": [
+        "7",
+        0
+      ]
+    }
+  },
+  "9": {
+    "class_type": "BasicScheduler",
+    "inputs": {
+      "model": [
+        "2",
+        0
+      ],
+      "scheduler": "simple",
+      "steps": 8,
+      "denoise": 1.0
+    }
+  },
+  "10": {
+    "class_type": "KSamplerSelect",
+    "inputs": {
+      "sampler_name": "res_multistep"
+    }
+  },
+  "11": {
+    "class_type": "RandomNoise",
+    "inputs": {
+      "noise_seed": 849201948572
+    }
+  },
+  "12": {
+    "class_type": "SamplerCustomAdvanced",
+    "inputs": {
+      "noise": [
+        "11",
+        0
+      ],
+      "guider": [
+        "8",
+        0
+      ],
+      "sampler": [
+        "10",
+        0
+      ],
+      "sigmas": [
+        "9",
+        0
+      ],
+      "latent_image": [
+        "7",
+        1
+      ]
+    }
+  },
+  "13": {
+    "class_type": "VAEDecodeTiled",
+    "inputs": {
+      "samples": [
+        "12",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ],
+      "tile_size": 512,
+      "overlap": 64,
+      "temporal_size": 64,
+      "temporal_overlap": 8
+    }
+  },
+  "14": {
+    "class_type": "RTXVideoSuperResolution",
+    "inputs": {
+      "images": [
+        "13",
+        0
+      ],
+      "resize_type": "target dimensions",
+      "quality": "ULTRA",
+      "strength": 1.0,
+      "image_encoding": "8-bit RGB",
+      "resize_type.width": 3840,
+      "resize_type.height": 2192
+    }
+  },
+  "15": {
+    "class_type": "VHS_VideoCombine",
+    "inputs": {
+      "frame_rate": 24,
+      "loop_count": 0,
+      "filename_prefix": "wallpapers/Tsunade_Moonlit_4K",
+      "format": "video/h264-mp4",
+      "pix_fmt": "yuv420p",
+      "crf": 19,
+      "save_metadata": true,
+      "trim_to_audio": false,
+      "pingpong": false,
+      "save_output": true,
+      "input_color_depth": "8bit",
+      "images": [
+        "16",
+        0
+      ]
+    }
+  },
+  "16": {
+    "class_type": "ImageScale",
+    "inputs": {
+      "image": [
+        "14",
+        0
+      ],
+      "crop": "center",
+      "upscale_method": "lanczos",
+      "width": 3840,
+      "height": 2160
+    }
+  }
+}
