@@ -37,3 +37,12 @@ The package has no lint script configured. Open `dist/index.html` using Wallpape
 Engine or a local browser configured to allow local module assets. In Wallpaper
 Engine, verify the four palettes, audio with both visualizer styles, media text,
 all clock positions, cursor ripples, plant/glint density and pause/resume behavior.
+
+## Workshop thumbnail
+
+`preview.jpg` is a dedicated 1024 x 1024 composition using the actual pond and koi
+renderers. Two larger fish stay readable in square Workshop tiles. A sample clock and active audio spectrum sit above the koi to show the optional
+features. Live wallpaper defaults and fish sizes are unchanged.
+Regenerate it with `pnpm --filter wallpaper-engine-koi-drift generate:preview`, then
+build to include it in `dist/`. The thumbnail renderer uses the existing Puppeteer
+and esbuild dependencies and does not load network assets.
