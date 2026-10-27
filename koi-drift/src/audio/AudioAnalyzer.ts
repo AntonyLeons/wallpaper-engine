@@ -28,6 +28,10 @@ export class AudioAnalyzer {
 
   private lastAudioTime = 0;
   private hasReceivedAudio = false;
+  private readonly metrics: AudioMetrics = {
+    bass: 0, mid: 0, treble: 0, overall: 0, beatPulse: 0,
+    spectrum: this.smoothedSpectrum, hasAudio: false,
+  };
 
   constructor() {
     this.registerWallpaperListener();
@@ -128,14 +132,12 @@ export class AudioAnalyzer {
     // Beat pulse decays quickly so each beat stays visually distinct.
     this.beatPulse = Math.max(0, this.beatPulse - deltaTimeSec * 3.5);
 
-    return {
-      bass: this.bass,
-      mid: this.mid,
-      treble: this.treble,
-      overall: this.overall,
-      beatPulse: this.beatPulse,
-      spectrum: this.smoothedSpectrum,
-      hasAudio: isAudioActive,
-    };
+    this.metrics.bass = this.bass;
+    this.metrics.mid = this.mid;
+    this.metrics.treble = this.treble;
+    this.metrics.overall = this.overall;
+    this.metrics.beatPulse = this.beatPulse;
+    this.metrics.hasAudio = isAudioActive;
+    return this.metrics;
   }
 }

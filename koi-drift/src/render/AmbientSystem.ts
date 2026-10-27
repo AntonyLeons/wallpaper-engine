@@ -26,6 +26,8 @@ export class AmbientSystem {
   private leaf = document.createElement('canvas');
   private flower = document.createElement('canvas');
   private cachedPreset = '';
+  private fronds: HTMLCanvasElement[] = [];
+  private frondsInitialized = false;
   private width = 1;
   private height = 1;
   private plantCount = 0;
@@ -252,8 +254,48 @@ export class AmbientSystem {
     ctx.restore();
   }
 
+  private ensureFronds(): void {
+    if (this.frondsInitialized) return;
+    this.frondsInitialized = true;
+    // Bake the three shapes once at enough resolution for the capped display DPR.
+    for (let variant = 0; variant < 3; variant++) {
+      const sprite = document.createElement('canvas');
+      sprite.width = 96 * 3;
+      sprite.height = 256 * 3;
+      const ctx = sprite.getContext('2d');
+      if (!ctx) return;
+      ctx.scale(3, 3);
+      ctx.translate(48, 236);
+      ctx.lineCap = 'round';
+      const length = 140 + variant * 35;
+      ctx.strokeStyle = '#657c4c88';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(15, -length * 0.55, 0, -length);
+      ctx.stroke();
+      for (let j = 1; j < 10; j++) {
+        const t = j / 10;
+        const y = -length * t;
+        const leafLength = 27 * Math.sin(t * Math.PI);
+        for (let side = -1; side <= 1; side += 2) {
+          ctx.beginPath();
+          ctx.moveTo(7 * Math.sin(t * Math.PI), y + 7);
+          ctx.quadraticCurveTo(side * leafLength * 0.6, y - 7, side * leafLength, y - 17);
+          ctx.quadraticCurveTo(side * leafLength * 0.8, y + 2, 7 * Math.sin(t * Math.PI), y + 7);
+          ctx.fillStyle = j % 2 ? '#48613dc9' : '#6a7c4cbb';
+          ctx.fill();
+        }
+      }
+      this.fronds.push(sprite);
+    }
+  }
+
   private renderBank(ctx: CanvasRenderingContext2D, size: number): void {
     const count = Math.min(7, Math.ceil(this.plantCount / 2));
+    if (count === 0) return;
+    this.ensureFronds();
+    if (this.fronds.length !== 3) return;
     ctx.lineCap = 'round';
     for (let corner = 0; corner < 2; corner++) {
       ctx.save();
@@ -263,26 +305,7 @@ export class AmbientSystem {
       for (let i = 0; i < count; i++) {
         ctx.save();
         ctx.rotate(0.18 + i * 0.18 + Math.sin(this.time * 0.22 + i) * 0.018);
-        const length = 140 + (i % 3) * 35;
-        ctx.strokeStyle = '#657c4c88';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.quadraticCurveTo(15, -length * 0.55, 0, -length);
-        ctx.stroke();
-        for (let j = 1; j < 10; j++) {
-          const t = j / 10;
-          const y = -length * t;
-          const leafLength = 27 * Math.sin(t * Math.PI);
-          for (let side = -1; side <= 1; side += 2) {
-            ctx.beginPath();
-            ctx.moveTo(7 * Math.sin(t * Math.PI), y + 7);
-            ctx.quadraticCurveTo(side * leafLength * 0.6, y - 7, side * leafLength, y - 17);
-            ctx.quadraticCurveTo(side * leafLength * 0.8, y + 2, 7 * Math.sin(t * Math.PI), y + 7);
-            ctx.fillStyle = j % 2 ? '#48613dc9' : '#6a7c4cbb';
-            ctx.fill();
-          }
-        }
+        ctx.drawImage(this.fronds[i % 3], -48, -236, 96, 256);
         ctx.restore();
       }
       ctx.restore();

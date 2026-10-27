@@ -39,6 +39,11 @@ class Application {
 
   private isRunning = false;
   private lastFrameTime = 0;
+  private frameId: number | null = null;
+  private readonly animate = (now: number): void => {
+    this.frameId = null;
+    this.tick(now);
+  };
 
   private mouse: MouseState = {
     x: -1000,
@@ -136,14 +141,18 @@ class Application {
   }
 
   private startLoop(): void {
-    if (this.isRunning) return;
+    if (this.isRunning || document.hidden) return;
     this.isRunning = true;
     this.lastFrameTime = performance.now();
-    requestAnimationFrame((t) => this.tick(t));
+    this.frameId = requestAnimationFrame(this.animate);
   }
 
   private stopLoop(): void {
     this.isRunning = false;
+    if (this.frameId !== null) {
+      cancelAnimationFrame(this.frameId);
+      this.frameId = null;
+    }
   }
 
   private tick(now: number): void {
@@ -157,7 +166,7 @@ class Application {
       const frameInterval = 1000 / targetFps;
       const elapsed = now - this.lastFrameTime;
       if (elapsed < frameInterval - 1) {
-        requestAnimationFrame((t) => this.tick(t));
+        this.frameId = requestAnimationFrame(this.animate);
         return;
       }
     }
@@ -179,7 +188,7 @@ class Application {
     this.ambientSystem.render(this.ctx, width, height, settings, audioMetrics);
 
     // 4. Render koi
-    this.koiSystem.render(this.ctx);
+    this.koiSystem.render(this.ctx, width, height);
 
     // 5. Floating leaves and glints above the fish
     this.ambientSystem.renderForeground(this.ctx, height);
@@ -192,7 +201,7 @@ class Application {
     // 7. Update UI Clock Overlay
     this.clockOverlay.update(settings);
 
-    requestAnimationFrame((t) => this.tick(t));
+    this.frameId = requestAnimationFrame(this.animate);
   }
 
 }

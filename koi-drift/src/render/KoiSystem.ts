@@ -331,8 +331,22 @@ export class KoiSystem {
     }
   }
 
-  public render(ctx: CanvasRenderingContext2D): void {
+  public render(ctx: CanvasRenderingContext2D, width: number, height: number): void {
     for (const koi of this.kois) {
+      const padding = 36 * koi.scale;
+      let minX = Infinity;
+      let minY = Infinity;
+      let maxX = -Infinity;
+      let maxY = -Infinity;
+      for (const joint of koi.spine) {
+        minX = Math.min(minX, joint.x);
+        minY = Math.min(minY, joint.y);
+        maxX = Math.max(maxX, joint.x);
+        maxY = Math.max(maxY, joint.y);
+      }
+      // Keep simulating hidden fish so their off-screen crossings stay continuous.
+      if (maxX + padding < 0 || maxY + padding < 0
+        || minX - padding > width || minY - padding > height) continue;
       this.renderKoi(ctx, koi);
     }
   }

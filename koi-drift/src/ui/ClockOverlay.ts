@@ -6,7 +6,10 @@ export class ClockOverlay {
   private timeEl: HTMLElement | null = null;
   private digitsEl: HTMLElement | null = null;
   private secondsEl: HTMLElement | null = null;
-  private lastTick = '';
+  private lastTick = -1;
+  private lastClockFormat = '';
+  private lastShowSeconds = false;
+  private visible: boolean | null = null;
   private readonly dateFormatter = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
   private dateEl: HTMLElement | null = null;
   private mediaEl: HTMLElement | null = null;
@@ -69,7 +72,7 @@ export class ClockOverlay {
     if (!this.mediaEl) return;
 
     if (this.mediaTitle) {
-      const text = this.mediaArtist ? `${this.mediaTitle} · ${this.mediaArtist}` : this.mediaTitle;
+      const text = this.mediaArtist ? `${this.mediaTitle} Â· ${this.mediaArtist}` : this.mediaTitle;
       this.mediaEl.textContent = text;
       this.mediaEl.style.display = 'block';
     } else {
@@ -154,14 +157,11 @@ export class ClockOverlay {
   public update(settings: AppSettings): void {
     if (!this.containerEl || !this.timeEl || !this.dateEl) return;
 
-    if (!settings.showClock) {
-      this.containerEl.style.opacity = '0';
-      this.containerEl.style.pointerEvents = 'none';
-      return;
+    if (this.visible !== settings.showClock) {
+      this.visible = settings.showClock;
+      this.containerEl.style.opacity = settings.showClock ? '1' : '0';
     }
-
-    this.containerEl.style.opacity = '1';
-    this.containerEl.style.pointerEvents = 'none';
+    if (!settings.showClock) return;
 
     // Position updates (memoized to avoid DOM thrashing)
     const posKey = `${settings.clockPosition}_${settings.clockPositionX}_${settings.clockPositionY}_${settings.taskbarOffset}`;
@@ -170,10 +170,14 @@ export class ClockOverlay {
       this.lastPositionKey = posKey;
     }
 
-    const now = new Date();
-    const tick = `${Math.floor(now.getTime() / 1000)}_${settings.clockFormat}_${settings.showSeconds}`;
-    if (tick === this.lastTick) return;
+    const timestamp = Date.now();
+    const tick = Math.floor(timestamp / 1000);
+    if (tick === this.lastTick && settings.clockFormat === this.lastClockFormat
+      && settings.showSeconds === this.lastShowSeconds) return;
     this.lastTick = tick;
+    this.lastClockFormat = settings.clockFormat;
+    this.lastShowSeconds = settings.showSeconds;
+    const now = new Date(timestamp);
 
     // Format Time
     let hours = now.getHours();
