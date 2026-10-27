@@ -1,6 +1,6 @@
 {
   "contentrating": "Everyone",
-  "description": "A tranquil garden pond seen from above. Hand-shaped koi, floating lily pads, a water lily, submerged stones, drifting caustics and quiet ripples, with subtle audio reactivity and an elegant clock. All artwork is generated locally for offline use. Source: https://github.com/AntonyLeons/wallpaper-engine",
+  "description": "A tranquil garden pond seen from above, with koi, floating lily pads, a water lily, submerged stones, drifting caustics and quiet ripples. Includes audio reactivity, an elegant clock and mouse interaction. Lightweight: approximately 226 KB including the preview image. Works offline. Source: https://github.com/AntonyLeons/wallpaper-engine",
   "file": "index.html",
   "general": {
     "properties": {
@@ -251,7 +251,7 @@
   "tags": [
     "Nature"
   ],
-  "title": "Koi Drift - Audio Responsive Koi Pond Wallpaper",
+  "title": "Koi Pond | Audio Reactive & Clock",
   "type": "web",
   "version": 0,
   "visibility": "public",

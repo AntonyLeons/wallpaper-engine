@@ -46,3 +46,15 @@ features. Live wallpaper defaults and fish sizes are unchanged.
 Regenerate it with `pnpm --filter wallpaper-engine-koi-drift generate:preview`, then
 build to include it in `dist/`. The thumbnail renderer uses the existing Puppeteer
 and esbuild dependencies and does not load network assets.
+
+## Reddit video preview
+
+Run `pnpm --filter wallpaper-engine-koi-drift generate:video` to export a 20-second
+1920 x 1080, 30 FPS H.264/AAC MP4 to `.temp/koi-pond-reddit.mp4`. Pass an absolute
+output path after the command to save elsewhere. Requires FFmpeg on PATH.
+
+The export uses the actual renderers and a seeded, fixed-step simulation, with the
+clock, a short cursor/ripple demonstration and an original ambient bell-and-pad cue.
+The spectrum demonstration follows the cue's note frequencies and envelopes. Swim
+speed is set to 0.65 for the preview. Video, poster and WAV files stay outside the
+production package; the live wallpaper defaults and download size are unchanged.

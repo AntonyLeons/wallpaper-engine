@@ -9,6 +9,7 @@
     "postbuild": "node -e \"import('fs').then(fs => { fs.copyFileSync('project.json', 'dist/project.json'); for (const file of ['preview.jpg', 'preview.gif']) { if (fs.existsSync(file)) fs.copyFileSync(file, 'dist/' + file); } })\"",
     "preview": "vite preview",
     "generate:preview": "node scripts/generate-preview.mjs",
+    "generate:video": "node scripts/generate-video.mjs",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
