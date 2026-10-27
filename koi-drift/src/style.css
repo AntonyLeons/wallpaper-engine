@@ -1,0 +1,87 @@
+/* Reset & Layout */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #0d3a48;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: #ffffff;
+}
+
+/* Wallpaper Canvas */
+#wallpaper-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 1;
+}
+
+/* Minimal waterline clock HUD: no card, floats directly above the pond */
+.clock-hud {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 0.5rem 1rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+  transition: opacity 0.4s ease, transform 0.4s ease, left 0.4s ease, top 0.4s ease, right 0.4s ease, bottom 0.4s ease;
+}
+
+.clock-date {
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 0.35rem;
+}
+
+.clock-time {
+  font-size: 4.2rem;
+  font-weight: 200;
+  letter-spacing: 4px;
+  line-height: 1;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+}
+
+.clock-media {
+  font-size: 0.85rem;
+  font-weight: 300;
+  letter-spacing: 1.5px;
+  margin-top: 0.55rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 420px;
+  align-self: stretch;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Responsive adjust for lower screen resolutions */
+@media (max-height: 720px) {
+  .clock-hud {
+    padding: 0.3rem 0.7rem;
+  }
+  .clock-time {
+    font-size: 2.6rem;
+  }
+  .clock-date {
+    font-size: 0.7rem;
+  }
+}
