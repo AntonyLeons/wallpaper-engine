@@ -114,31 +114,52 @@ export class KoiSystem {
       let steerX = Math.cos(koi.wanderAngle);
       let steerY = Math.sin(koi.wanderAngle);
 
-      // Keep away from pond edges.
-      const margin = 110 * koi.scale;
-      let edgeWeight = 0;
-      if (koi.head.x < margin) edgeWeight = Math.max(edgeWeight, 1 - koi.head.x / margin);
-      if (koi.head.x > width - margin) edgeWeight = Math.max(edgeWeight, 1 - (width - koi.head.x) / margin);
-      if (koi.head.y < margin) edgeWeight = Math.max(edgeWeight, 1 - koi.head.y / margin);
-      if (koi.head.y > height - margin) edgeWeight = Math.max(edgeWeight, 1 - (height - koi.head.y) / margin);
-
-      if (edgeWeight > 0) {
-        const toCenter = Math.atan2(height * 0.5 - koi.head.y, width * 0.5 - koi.head.x);
-        steerX += Math.cos(toCenter) * edgeWeight * 2.2;
-        steerY += Math.sin(toCenter) * edgeWeight * 2.2;
+      const baseSpeed = 62 * settings.fishSpeed * koi.speedFactor;
+      const cruiseSpeed = baseSpeed * (1 + audioBoost * 0.55 + koi.dartBoost * 1.1);
+      const turnRate = 0.9 + midBoost * 0.55;
+      // Personal space is measured against neighbours' bodies, not only their heads.
+      for (const other of this.kois) {
+        if (other === koi) continue;
+        let closestX = 0;
+        let closestY = 0;
+        let closestSq = Infinity;
+        for (let i = 0; i < SEGMENT_COUNT; i += 3) {
+          const dx = koi.head.x - other.spine[i].x;
+          const dy = koi.head.y - other.spine[i].y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < closestSq) {
+            closestSq = d2;
+            closestX = dx;
+            closestY = dy;
+          }
+        }
+        const radius = 80 * (koi.scale + other.scale);
+        if (closestSq < radius * radius) {
+          const distance = Math.sqrt(closestSq);
+          const weight = (1 - distance / radius) ** 2 * 4;
+          if (distance > 0.01) {
+            steerX += closestX / distance * weight;
+            steerY += closestY / distance * weight;
+          } else {
+            // Deterministic escape direction for an exact overlap.
+            steerX += Math.cos(koi.phase) * weight;
+            steerY += Math.sin(koi.phase) * weight;
+          }
+        }
       }
 
-      // Gentle curiosity: follow the cursor when enabled.
+      // Approach a comfortable orbit around the cursor rather than one shared point.
       if (settings.mouseFollow && mouse.active) {
-        const dx = mouse.x - koi.head.x;
-        const dy = mouse.y - koi.head.y;
-        const distSq = dx * dx + dy * dy;
-        const followRadius = 460;
-        if (distSq > 90 && distSq < followRadius * followRadius) {
-          const dist = Math.sqrt(distSq);
-          const weight = (1 - dist / followRadius) * 0.9;
-          steerX += (dx / dist) * weight;
-          steerY += (dy / dist) * weight;
+        const cursorX = clamp(mouse.x, 0, width);
+        const cursorY = clamp(mouse.y, 0, height);
+        const dx = cursorX - koi.head.x;
+        const dy = cursorY - koi.head.y;
+        const distance = Math.hypot(dx, dy);
+        const orbitRadius = 110 * koi.scale;
+        if (distance > 0.01 && distance < 460) {
+          const weight = clamp((distance - orbitRadius) / 180, -0.7, 0.55);
+          steerX += dx / distance * weight;
+          steerY += dy / distance * weight;
         }
       }
 
@@ -148,7 +169,6 @@ export class KoiSystem {
       let angleDiff = targetAngle - koi.heading;
       while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
       while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-      const turnRate = 0.75 + midBoost * 0.55;
       koi.heading += clamp(angleDiff, -turnRate * deltaTimeSec, turnRate * deltaTimeSec);
 
       // Undulation: slight heading oscillation produces the swim wave downstream.
@@ -158,14 +178,10 @@ export class KoiSystem {
       const moveHeading = koi.heading + wiggle;
 
       // --- Movement ---
-      const baseSpeed = 62 * settings.fishSpeed * koi.speedFactor;
-      const speed = baseSpeed * (1 + audioBoost * 0.55 + koi.dartBoost * 1.1);
+      // Keep cruising through the viewport edge; it is not a physical pond wall.
+      const speed = cruiseSpeed;
       koi.head.x += Math.cos(moveHeading) * speed * deltaTimeSec;
       koi.head.y += Math.sin(moveHeading) * speed * deltaTimeSec;
-
-      // Hard clamp so fish never leave the pond.
-      koi.head.x = clamp(koi.head.x, -30, width + 30);
-      koi.head.y = clamp(koi.head.y, -30, height + 30);
 
       // --- Spine follow chain ---
       const segLen = 6.4 * koi.scale;
@@ -191,6 +207,7 @@ export class KoiSystem {
         seg.x = prev.x + ((dx * c - dy * s) / d) * segLen;
         seg.y = prev.y + ((dx * s + dy * c) / d) * segLen;
       }
+      this.wrapBody(koi, width, height);
     }
   }
 
@@ -247,18 +264,71 @@ export class KoiSystem {
       dartBoost: 0,
     };
 
-    // Lay the spine out behind the head along the initial heading.
+    // Choose a well-spaced body centre, with room for the entire initial fish.
     const segLen = 6.4 * koi.scale;
-    koi.head.x = 60 + rng() * Math.max(10, width - 120);
-    koi.head.y = 60 + rng() * Math.max(10, height - 120);
+    const halfLength = (SEGMENT_COUNT - 1) * segLen * 0.5;
+    const insetX = Math.min(width * 0.45, halfLength + 42 * koi.scale);
+    const insetY = Math.min(height * 0.45, halfLength + 42 * koi.scale);
+    let bestX = width / 2;
+    let bestY = height / 2;
+    let bestDistance = -1;
+    for (let attempt = 0; attempt < 32; attempt++) {
+      const x = insetX + rng() * Math.max(0, width - insetX * 2);
+      const y = insetY + rng() * Math.max(0, height - insetY * 2);
+      let distance = Infinity;
+      for (const other of this.kois) {
+        const centre = other.spine[8];
+        distance = Math.min(distance, (x - centre.x) ** 2 + (y - centre.y) ** 2);
+      }
+      if (distance > bestDistance) {
+        bestX = x;
+        bestY = y;
+        bestDistance = distance;
+      }
+    }
+    koi.head.x = bestX + Math.cos(koi.heading) * halfLength;
+    koi.head.y = bestY + Math.sin(koi.heading) * halfLength;
     for (let i = 0; i < SEGMENT_COUNT; i++) {
       koi.spine.push({
         x: koi.head.x - Math.cos(koi.heading) * segLen * i,
         y: koi.head.y - Math.sin(koi.heading) * segLen * i,
       });
     }
+    this.wrapBody(koi, width, height);
 
     this.kois.push(koi);
+  }
+
+  private wrapBody(koi: Koi, width: number, height: number): void {
+    // Re-enter on the opposite side only when every fin and the shadow are hidden.
+    // Translate the whole chain together, preserving heading, speed and swim phase.
+    const padding = 36 * koi.scale;
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const segment of koi.spine) {
+      minX = Math.min(minX, segment.x - padding);
+      minY = Math.min(minY, segment.y - padding);
+      maxX = Math.max(maxX, segment.x + padding);
+      maxY = Math.max(maxY, segment.y + padding);
+    }
+    // Only wrap an outward-moving fish, so a flexing tail cannot trigger a
+    // second wrap while the head is already swimming inward from the other edge.
+    const forwardX = Math.cos(koi.heading);
+    const forwardY = Math.sin(koi.heading);
+    const dx = maxX < 0 && forwardX < 0 ? width - minX
+      : minX > width && forwardX > 0 ? -maxX : 0;
+    const dy = maxY < 0 && forwardY < 0 ? height - minY
+      : minY > height && forwardY > 0 ? -maxY : 0;
+    if (dx !== 0 || dy !== 0) {
+      for (const segment of koi.spine) {
+        segment.x += dx;
+        segment.y += dy;
+      }
+      koi.head.x = koi.spine[0].x;
+      koi.head.y = koi.spine[0].y;
+    }
   }
 
   public render(ctx: CanvasRenderingContext2D): void {
