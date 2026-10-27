@@ -1,4 +1,3 @@
-/* Reset & Layout */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -11,77 +10,101 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: #0d3a48;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  color: #ffffff;
+  background: #173f3e;
+  color: #eee8d5;
+  font-family: 'Segoe UI', sans-serif;
 }
 
-/* Wallpaper Canvas */
 #wallpaper-canvas {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
   display: block;
-  z-index: 1;
 }
 
-/* Minimal waterline clock HUD: no card, floats directly above the pond */
 .clock-hud {
   position: absolute;
-  z-index: 10;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  padding: 0.5rem 1rem;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
-  transition: opacity 0.4s ease, transform 0.4s ease, left 0.4s ease, top 0.4s ease, right 0.4s ease, bottom 0.4s ease;
+  max-width: 90vw;
+  padding: 18px 0;
+  opacity: 0;
+  pointer-events: none;
+  text-shadow: 0 2px 18px #051b2599;
+  transition: opacity 0.5s ease;
 }
 
-.clock-date {
-  font-size: 0.85rem;
-  font-weight: 400;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.65);
-  margin-bottom: 0.35rem;
+.clock-hud::before {
+  content: '';
+  display: block;
+  width: 34px;
+  height: 1px;
+  background: #d7bf85a6;
+  margin-bottom: 20px;
 }
 
 .clock-time {
-  font-size: 4.2rem;
-  font-weight: 200;
-  letter-spacing: 4px;
+  display: flex;
+  align-items: baseline;
+  white-space: nowrap;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(42px, 4.5vw, 88px);
+  font-weight: 400;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: -0.045em;
   line-height: 1;
-  color: #ffffff;
-  font-variant-numeric: tabular-nums;
+  color: #f2ecda;
+}
+
+.clock-seconds {
+  margin-left: 5px;
+  font-size: 0.39em;
+  letter-spacing: 0.02em;
+  color: #e3dfc5a6;
+}
+
+.clock-date {
+  margin-top: 14px;
+  max-width: 100%;
+  font-size: clamp(9px, 0.7vw, 12px);
+  line-height: 1.6;
+  font-weight: 400;
+  letter-spacing: 0.23em;
+  color: #dedfc7a8;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
 }
 
 .clock-media {
-  font-size: 0.85rem;
-  font-weight: 300;
-  letter-spacing: 1.5px;
-  margin-top: 0.55rem;
-  padding-top: 0.55rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.18);
-  color: rgba(255, 255, 255, 0.8);
-  max-width: 420px;
-  align-self: stretch;
-  text-align: right;
+  max-width: min(360px, 85vw);
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid #d7d7b51f;
+  color: #eee8d394;
+  font-size: 11px;
+  letter-spacing: 0.07em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Responsive adjust for lower screen resolutions */
-@media (max-height: 720px) {
-  .clock-hud {
-    padding: 0.3rem 0.7rem;
-  }
-  .clock-time {
-    font-size: 2.6rem;
-  }
-  .clock-date {
-    font-size: 0.7rem;
-  }
+.clock-hud[data-position='top_left'],
+.clock-hud[data-position='bottom_left'] { align-items: flex-start; }
+.clock-hud[data-position='center'],
+.clock-hud[data-position='top_center'],
+.clock-hud[data-position='bottom_center'],
+.clock-hud[data-position='custom'] { align-items: center; text-align: center; }
+
+@media (max-width: 600px) {
+  .clock-time { font-size: 48px; }
+  .clock-date { letter-spacing: 0.15em; font-size: 9px; }
+}
+
+@media (max-height: 500px) {
+  .clock-time { font-size: 38px; }
+  .clock-hud::before { margin-bottom: 10px; }
+  .clock-date { margin-top: 8px; }
 }

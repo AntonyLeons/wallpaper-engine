@@ -174,14 +174,14 @@ class Application {
     this.koiSystem.update(deltaTimeSec, width, height, settings, audioMetrics, this.mouse);
     this.ambientSystem.update(deltaTimeSec, width, height, settings, audioMetrics, this.mouse);
 
-    // 3. Render background, kelp and ripples (below the fish)
+    // 3. Render the pond bed, submerged stems and ripples
     this.waterRenderer.render(this.ctx, width, height, deltaTimeSec, settings, audioMetrics, this.mouse);
     this.ambientSystem.render(this.ctx, width, height, settings, audioMetrics);
 
     // 4. Render koi
     this.koiSystem.render(this.ctx);
 
-    // 5. Bubbles above the fish
+    // 5. Floating leaves and glints above the fish
     this.ambientSystem.renderForeground(this.ctx, height);
 
     // 6. Audio visualizer

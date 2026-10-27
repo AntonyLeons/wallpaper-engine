@@ -4,11 +4,15 @@ import { WallpaperMediaProperties } from '../types/wallpaper';
 export class ClockOverlay {
   private containerEl: HTMLElement | null = null;
   private timeEl: HTMLElement | null = null;
+  private digitsEl: HTMLElement | null = null;
+  private secondsEl: HTMLElement | null = null;
+  private lastTick = '';
+  private readonly dateFormatter = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
   private dateEl: HTMLElement | null = null;
   private mediaEl: HTMLElement | null = null;
 
-  private lastFormattedTime = '14:30:00';
-  private lastFormattedDate = 'THURSDAY, 23 JUL';
+  private lastFormattedTime = '';
+  private lastFormattedDate = '';
   private mediaTitle = '';
   private mediaArtist = '';
   private lastPositionKey = '';
@@ -30,14 +34,18 @@ export class ClockOverlay {
     this.timeEl = document.createElement('div');
     this.timeEl.id = 'clock-time';
     this.timeEl.className = 'clock-time';
+    this.digitsEl = document.createElement('span');
+    this.secondsEl = document.createElement('span');
+    this.secondsEl.className = 'clock-seconds';
+    this.timeEl.append(this.digitsEl, this.secondsEl);
 
     this.mediaEl = document.createElement('div');
     this.mediaEl.id = 'clock-media';
     this.mediaEl.className = 'clock-media';
     this.mediaEl.style.display = 'none';
 
-    this.containerEl.appendChild(this.dateEl);
     this.containerEl.appendChild(this.timeEl);
+    this.containerEl.appendChild(this.dateEl);
     this.containerEl.appendChild(this.mediaEl);
 
     document.body.appendChild(this.containerEl);
@@ -47,8 +55,8 @@ export class ClockOverlay {
     if (typeof window !== 'undefined' && window.wallpaperRegisterMediaPropertiesListener) {
       try {
         window.wallpaperRegisterMediaPropertiesListener((props: WallpaperMediaProperties) => {
-          this.mediaTitle = props.title || '';
-          this.mediaArtist = props.artist || '';
+          this.mediaTitle = typeof props?.title === 'string' ? props.title : '';
+          this.mediaArtist = typeof props?.artist === 'string' ? props.artist : '';
           this.updateMediaDisplay();
         });
       } catch (err) {
@@ -61,7 +69,7 @@ export class ClockOverlay {
     if (!this.mediaEl) return;
 
     if (this.mediaTitle) {
-      const text = this.mediaArtist ? `Now Playing - ${this.mediaTitle} - ${this.mediaArtist}` : `Now Playing - ${this.mediaTitle}`;
+      const text = this.mediaArtist ? `${this.mediaTitle} · ${this.mediaArtist}` : this.mediaTitle;
       this.mediaEl.textContent = text;
       this.mediaEl.style.display = 'block';
     } else {
@@ -72,7 +80,8 @@ export class ClockOverlay {
   private applyPosition(settings: AppSettings): void {
     if (!this.containerEl) return;
 
-    const bottomOffset = settings.taskbarOffset + 24;
+    const bottomOffset = settings.taskbarOffset + 32;
+    this.containerEl.dataset.position = settings.clockPosition;
 
     switch (settings.clockPosition) {
       case 'top_left':
@@ -152,7 +161,7 @@ export class ClockOverlay {
     }
 
     this.containerEl.style.opacity = '1';
-    this.containerEl.style.pointerEvents = 'auto';
+    this.containerEl.style.pointerEvents = 'none';
 
     // Position updates (memoized to avoid DOM thrashing)
     const posKey = `${settings.clockPosition}_${settings.clockPositionX}_${settings.clockPositionY}_${settings.taskbarOffset}`;
@@ -162,6 +171,9 @@ export class ClockOverlay {
     }
 
     const now = new Date();
+    const tick = `${Math.floor(now.getTime() / 1000)}_${settings.clockFormat}_${settings.showSeconds}`;
+    if (tick === this.lastTick) return;
+    this.lastTick = tick;
 
     // Format Time
     let hours = now.getHours();
@@ -179,26 +191,16 @@ export class ClockOverlay {
     const timeStr = `${hoursStr}:${minutes}${secondsStr}${ampm}`;
 
     if (timeStr !== this.lastFormattedTime) {
-      this.timeEl.textContent = timeStr;
+      if (this.digitsEl) this.digitsEl.textContent = `${hoursStr}:${minutes}`;
+      if (this.secondsEl) this.secondsEl.textContent = `${secondsStr}${ampm}`;
       this.lastFormattedTime = timeStr;
     }
 
-    // Format Date
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: 'long',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    };
-    const dateStr = now.toLocaleDateString(undefined, options);
+    const dateStr = this.dateFormatter.format(now);
 
     if (dateStr !== this.lastFormattedDate) {
       this.dateEl.textContent = dateStr.toUpperCase();
       this.lastFormattedDate = dateStr;
     }
-
-    // Soft water-like glow matching the accent color
-    const p = settings.primaryColor;
-    this.timeEl.style.textShadow = `0 0 18px rgba(${p.r}, ${p.g}, ${p.b}, 0.35), 0 2px 12px rgba(0, 0, 0, 0.4)`;
   }
 }

@@ -32,6 +32,7 @@ interface Koi {
   cosA: Float32Array;
   sinA: Float32Array;
   outline: Float32Array;
+  paletteIndex: number;
   baseColor: string;
   patches: KoiPatch[];
   dartTimer: number;
@@ -64,6 +65,7 @@ export class KoiSystem {
   private kois: Koi[] = [];
   private readonly maxKois = 12;
   private time = 0;
+  private cachedPreset = '';
 
   public update(
     deltaTimeSec: number,
@@ -81,6 +83,17 @@ export class KoiSystem {
     }
     while (this.kois.length > Math.min(settings.fishCount, this.maxKois)) {
       this.kois.pop();
+    }
+
+    if (this.cachedPreset !== settings.pondPreset) {
+      this.cachedPreset = settings.pondPreset;
+      const palette = PRESET_PALETTES[settings.pondPreset];
+      for (const koi of this.kois) {
+        koi.baseColor = palette.koiBase[koi.paletteIndex % palette.koiBase.length];
+        for (const patch of koi.patches) {
+          patch.color = palette.koPatch[koi.paletteIndex % palette.koPatch.length];
+        }
+      }
     }
 
     const audioBoost = settings.audioReactive && audio.hasAudio ? audio.bass * 0.9 : 0;
@@ -227,6 +240,7 @@ export class KoiSystem {
       cosA: new Float32Array(SEGMENT_COUNT),
       sinA: new Float32Array(SEGMENT_COUNT),
       outline: new Float32Array(SEGMENT_COUNT * 4),
+      paletteIndex: paletteIdx,
       baseColor: palette.koiBase[paletteIdx % palette.koiBase.length],
       patches,
       dartTimer: rng() * 14,

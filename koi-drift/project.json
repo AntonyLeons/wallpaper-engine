@@ -1,6 +1,6 @@
 {
   "contentrating": "Everyone",
-  "description": "A tranquil, high-performance underwater pond wallpaper. Procedurally animated koi fish, swaying kelp, rising bubbles, rain ripples, caustic light rays, real-time audio reactivity and a minimal digital clock. Source: https://github.com/AntonyLeons/wallpaper-engine",
+  "description": "A tranquil garden pond seen from above. Hand-shaped koi, floating lily pads, a water lily, submerged stones, drifting caustics and quiet ripples, with subtle audio reactivity and an elegant clock. All artwork is generated locally for offline use. Source: https://github.com/AntonyLeons/wallpaper-engine",
   "file": "index.html",
   "general": {
     "properties": {
@@ -27,7 +27,7 @@
         "min": 0,
         "order": 103,
         "step": 10,
-        "text": "Bubble Density",
+        "text": "Drifting Glints",
         "type": "slider",
         "value": 80
       },
@@ -139,7 +139,7 @@
         "min": 0,
         "order": 100,
         "step": 1,
-        "text": "Kelp Strands",
+        "text": "Pond Vegetation",
         "type": "slider",
         "value": 10
       },
@@ -199,11 +199,11 @@
         "index": 7,
         "options": [
           {
-            "label": "Bottom Spectrum Bars",
+            "label": "Quiet Spectrum",
             "value": "bars"
           },
           {
-            "label": "Surface Waveform",
+            "label": "Waterline Waveform",
             "value": "waveform"
           },
           {

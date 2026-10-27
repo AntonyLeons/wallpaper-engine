@@ -32,9 +32,9 @@ export interface PresetPalette {
 
 export const PRESET_PALETTES: Record<PondPreset, PresetPalette> = {
   lagoon: {
-    waterTop: '#1e6a72',
-    waterMid: '#0d3a48',
-    waterBottom: '#061c26',
+    waterTop: '#315c57',
+    waterMid: '#173f3e',
+    waterBottom: '#091f29',
     caustic: '#9fe8dc',
     koiBase: ['#f4f1e8', '#e8944a', '#f4f1e8', '#d8452b'],
     koPatch: ['#e07830', '#f4f1e8', '#d8452b', '#f4f1e8'],
@@ -42,9 +42,9 @@ export const PRESET_PALETTES: Record<PondPreset, PresetPalette> = {
     tint: '#2a8a7a',
   },
   sunset: {
-    waterTop: '#7a4a3a',
-    waterMid: '#3a2436',
-    waterBottom: '#140d1e',
+    waterTop: '#67584b',
+    waterMid: '#343f40',
+    waterBottom: '#18252e',
     caustic: '#ffd9a0',
     koiBase: ['#f8efd8', '#e07830', '#f8efd8', '#b03028'],
     koPatch: ['#c8401e', '#f8efd8', '#e08838', '#802018'],
@@ -52,9 +52,9 @@ export const PRESET_PALETTES: Record<PondPreset, PresetPalette> = {
     tint: '#b06a3a',
   },
   jade: {
-    waterTop: '#3f8a6a',
-    waterMid: '#1c4a3a',
-    waterBottom: '#0a2018',
+    waterTop: '#4e7057',
+    waterMid: '#244d40',
+    waterBottom: '#102d29',
     caustic: '#d8f0c8',
     koiBase: ['#f8efd8', '#e89838', '#f8efd8', '#c83828'],
     koPatch: ['#e08028', '#f8efd8', '#c83828', '#f8efd8'],
@@ -62,9 +62,9 @@ export const PRESET_PALETTES: Record<PondPreset, PresetPalette> = {
     tint: '#3a9a78',
   },
   dusk: {
-    waterTop: '#141a34',
-    waterMid: '#0a1024',
-    waterBottom: '#04060f',
+    waterTop: '#27394a',
+    waterMid: '#132a36',
+    waterBottom: '#071721',
     caustic: '#a8c0f0',
     koiBase: ['#e8e4d8', '#d87830', '#e8e4d8', '#a82018'],
     koPatch: ['#c84818', '#e8e4d8', '#a82018', '#e8e4d8'],
