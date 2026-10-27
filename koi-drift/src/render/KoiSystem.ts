@@ -1,4 +1,4 @@
-import { AppSettings, ColorRGB, PRESET_PALETTES } from '../config/settings';
+import { AppSettings, PRESET_PALETTES } from '../config/settings';
 import { AudioMetrics } from '../audio/AudioAnalyzer';
 
 export interface MouseState {
@@ -18,6 +18,7 @@ interface KoiPatch {
   dx: number; // lateral offset, -0.5..0.5 relative to half width
   radius: number;
   color: string;
+  shape: Path2D;
 }
 
 interface Koi {
@@ -28,6 +29,9 @@ interface Koi {
   phase: number;
   head: Segment;
   spine: Segment[];
+  cosA: Float32Array;
+  sinA: Float32Array;
+  outline: Float32Array;
   baseColor: string;
   patches: KoiPatch[];
   dartTimer: number;
@@ -37,9 +41,9 @@ interface Koi {
 const SEGMENT_COUNT = 18;
 // Body half-width profile from head to tail, multiplied by scale.
 const WIDTH_PROFILE = [
-  0.55, 0.80, 0.94, 1.0, 1.0, 0.98, 0.94, 0.88, 0.80, 0.71, 0.61, 0.51, 0.42, 0.32, 0.24, 0.17, 0.11, 0.07,
+  0.50, 0.72, 0.88, 0.98, 1.0, 1.0, 0.98, 0.93, 0.86, 0.77, 0.66, 0.55, 0.44, 0.34, 0.25, 0.18, 0.12, 0.10,
 ];
-const BASE_BODY_WIDTH = 11.5;
+const BASE_BODY_WIDTH = 14.5;
 
 function mulberry32(seed: number): () => number {
   let a = seed >>> 0;
@@ -54,19 +58,6 @@ function mulberry32(seed: number): () => number {
 
 function clamp(v: number, min: number, max: number): number {
   return v < min ? min : v > max ? max : v;
-}
-
-function clampInt(v: number, min: number, max: number): number {
-  return Math.round(Math.max(min, Math.min(max, v)));
-}
-
-function hexToRGB(hex: string): ColorRGB {
-  const h = hex.replace('#', '');
-  return {
-    r: parseInt(h.substring(0, 2), 16),
-    g: parseInt(h.substring(2, 4), 16),
-    b: parseInt(h.substring(4, 6), 16),
-  };
 }
 
 export class KoiSystem {
@@ -105,7 +96,7 @@ export class KoiSystem {
       koi.dartBoost = Math.max(0, koi.dartBoost - deltaTimeSec * 0.9);
 
       // --- Steering ---
-      koi.wanderAngle += Math.sin(this.time * 0.7 + koi.phase * 3.1) * 1.4 * deltaTimeSec;
+      koi.wanderAngle += Math.sin(this.time * 0.38 + koi.speedFactor * 4.1) * 0.32 * deltaTimeSec;
 
       let steerX = Math.cos(koi.wanderAngle);
       let steerY = Math.sin(koi.wanderAngle);
@@ -144,13 +135,13 @@ export class KoiSystem {
       let angleDiff = targetAngle - koi.heading;
       while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
       while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-      const turnRate = 2.6 + midBoost * 2.0;
+      const turnRate = 0.75 + midBoost * 0.55;
       koi.heading += clamp(angleDiff, -turnRate * deltaTimeSec, turnRate * deltaTimeSec);
 
       // Undulation: slight heading oscillation produces the swim wave downstream.
       const swimPhaseRate = 3.2 + (1 + audioBoost) * 1.4;
       koi.phase += deltaTimeSec * swimPhaseRate;
-      const wiggle = Math.sin(koi.phase * 0.5) * (0.14 + audioBoost * 0.12 + koi.dartBoost * 0.05);
+      const wiggle = Math.sin(koi.phase * 0.5) * (0.045 + audioBoost * 0.04 + koi.dartBoost * 0.03);
       const moveHeading = koi.heading + wiggle;
 
       // --- Movement ---
@@ -178,8 +169,14 @@ export class KoiSystem {
           dy = 0;
           d = 1;
         }
-        seg.x = prev.x + (dx / d) * segLen;
-        seg.y = prev.y + (dy / d) * segLen;
+        // Keep the head steady; let a small travelling wave build toward the tail.
+        const tailWeight = i / (koi.spine.length - 1);
+        const bend = Math.sin(koi.phase - i * 0.42) * tailWeight * tailWeight
+          * deltaTimeSec * (0.7 + koi.dartBoost * 0.5);
+        const c = Math.cos(bend);
+        const s = Math.sin(bend);
+        seg.x = prev.x + ((dx * c - dy * s) / d) * segLen;
+        seg.y = prev.y + ((dx * s + dy * c) / d) * segLen;
       }
     }
   }
@@ -189,26 +186,47 @@ export class KoiSystem {
     const rng = mulberry32(1717 + index * 7919);
     const paletteIdx = Math.floor(rng() * palette.koiBase.length);
 
-    const patchCount = 2 + Math.floor(rng() * 3);
+    // Broad, asymmetric islands of pigment, generated only when a fish spawns.
+    const patchCount = 3 + Math.floor(rng() * 2);
     const patches: KoiPatch[] = [];
     for (let pIdx = 0; pIdx < patchCount; pIdx++) {
-      // Avoid the very head and very tail so patches stay well shaped.
+      const shape = new Path2D();
+      const lobes = 9;
+      const points: Segment[] = [];
+      for (let j = 0; j < lobes; j++) {
+        const angle = j / lobes * Math.PI * 2;
+        const radius = 0.72 + rng() * 0.38;
+        points.push({ x: Math.cos(angle) * radius, y: Math.sin(angle) * radius });
+      }
+      shape.moveTo((points[0].x + points[lobes - 1].x) / 2,
+        (points[0].y + points[lobes - 1].y) / 2);
+      for (let j = 0; j < lobes; j++) {
+        const next = points[(j + 1) % lobes];
+        shape.quadraticCurveTo(points[j].x, points[j].y,
+          (points[j].x + next.x) / 2, (points[j].y + next.y) / 2);
+      }
+      shape.closePath();
       patches.push({
-        segIndex: 3 + Math.floor(rng() * (SEGMENT_COUNT - 8)),
-        dx: rng() * 1.0 - 0.5,
-        radius: (0.5 + rng() * 0.9) / Math.max(1, patchCount - pIdx),
-        color: palette.koPatch[(paletteIdx + pIdx) % palette.koPatch.length],
+        segIndex: 1 + pIdx * 3,
+        dx: rng() * 0.8 - 0.4,
+        radius: 0.65 + rng() * 0.45,
+        color: palette.koPatch[paletteIdx % palette.koPatch.length],
+        shape,
       });
     }
 
+    const heading = rng() * Math.PI * 2;
     const koi: Koi = {
       scale: 0.85 + rng() * 0.75,
       speedFactor: 0.8 + rng() * 0.45,
-      heading: rng() * Math.PI * 2,
-      wanderAngle: rng() * Math.PI * 2,
+      heading,
+      wanderAngle: heading,
       phase: rng() * Math.PI * 2,
       head: { x: 0, y: 0 },
       spine: [],
+      cosA: new Float32Array(SEGMENT_COUNT),
+      sinA: new Float32Array(SEGMENT_COUNT),
+      outline: new Float32Array(SEGMENT_COUNT * 4),
       baseColor: palette.koiBase[paletteIdx % palette.koiBase.length],
       patches,
       dartTimer: rng() * 14,
@@ -236,172 +254,163 @@ export class KoiSystem {
   }
 
   private renderKoi(ctx: CanvasRenderingContext2D, koi: Koi): void {
-    const spine = koi.spine;
+    const { spine, cosA, sinA, outline, scale } = koi;
     const n = spine.length;
-    const scale = koi.scale;
-
-    // Per-segment heading angles (direction toward the head).
-    const cosA = new Float32Array(n);
-    const sinA = new Float32Array(n);
     for (let i = 0; i < n; i++) {
-      const a = i === 0
-        ? koi.heading
-        : Math.atan2(spine[i - 1].y - spine[i].y, spine[i - 1].x - spine[i].x);
-      cosA[i] = Math.cos(a);
-      sinA[i] = Math.sin(a);
+      // Central tangents keep the silhouette smooth through a turn.
+      const front = spine[Math.max(0, i - 1)];
+      const back = spine[Math.min(n - 1, i + 1)];
+      const angle = Math.atan2(front.y - back.y, front.x - back.x);
+      cosA[i] = Math.cos(angle);
+      sinA[i] = Math.sin(angle);
+      const w = WIDTH_PROFILE[i] * BASE_BODY_WIDTH * scale;
+      outline[i * 2] = spine[i].x + sinA[i] * w;
+      outline[i * 2 + 1] = spine[i].y - cosA[i] * w;
+      const opposite = (n * 2 - 1 - i) * 2;
+      outline[opposite] = spine[i].x - sinA[i] * w;
+      outline[opposite + 1] = spine[i].y + cosA[i] * w;
     }
 
-    // Head tip, slightly beyond the first spine joint.
-    const noseX = spine[0].x + cosA[0] * 7.5 * scale;
-    const noseY = spine[0].y + sinA[0] * 7.5 * scale;
-
-    // --- Tail fin: translucent fan rooted inside the body so it reads attached ---
-    const jointX = spine[n - 2].x;
-    const jointY = spine[n - 2].y;
-    const fanLen = 19 * scale;
-    const sway = Math.sin(koi.phase * 0.5) * 0.45;
-    const tailAngle = Math.atan2(spine[n - 1].y - jointY, spine[n - 1].x - jointX);
-    const mA = tailAngle - 0.5 + sway;
-    const mB = tailAngle - 0.5 + sway + 1.0;
-    const baseRGB = hexToRGB(koi.baseColor);
-
-    const fanGrad = ctx.createLinearGradient(jointX, jointY, jointX - cosA[n - 2] * fanLen, jointY - sinA[n - 2] * fanLen);
-    fanGrad.addColorStop(0, `rgba(${baseRGB.r}, ${baseRGB.g}, ${baseRGB.b}, 0.8)`);
-    fanGrad.addColorStop(1, `rgba(${baseRGB.r}, ${baseRGB.g}, ${baseRGB.b}, 0.12)`);
-
-    ctx.fillStyle = fanGrad;
+    // Fins are drawn in joint-local coordinates; no textures or effect buffers.
+    ctx.save();
+    ctx.translate(spine[n - 1].x, spine[n - 1].y);
+    ctx.rotate(Math.atan2(sinA[n - 1], cosA[n - 1]) + Math.sin(koi.phase) * 0.24);
+    ctx.scale(scale, scale);
+    ctx.fillStyle = 'rgba(238, 226, 199, 0.6)';
+    ctx.strokeStyle = 'rgba(255, 246, 219, 0.26)';
+    ctx.lineWidth = 0.7;
     ctx.beginPath();
-    // Broad base spanning perpendicular to the body at the last-but-one joint.
-    const baseHalfW = 4.5 * scale;
-    ctx.moveTo(jointX + sinA[n - 2] * baseHalfW, jointY - cosA[n - 2] * baseHalfW);
-    ctx.quadraticCurveTo(
-      jointX + Math.cos(mA) * fanLen * 0.55,
-      jointY + Math.sin(mA) * fanLen * 0.55,
-      jointX + Math.cos(mA) * fanLen,
-      jointY + Math.sin(mA) * fanLen
-    );
-    ctx.quadraticCurveTo(
-      jointX + Math.cos(tailAngle) * fanLen * 0.85,
-      jointY + Math.sin(tailAngle) * fanLen * 0.85,
-      jointX + Math.cos(mB) * fanLen,
-      jointY + Math.sin(mB) * fanLen
-    );
-    ctx.lineTo(jointX - sinA[n - 2] * baseHalfW, jointY + cosA[n - 2] * baseHalfW);
+    ctx.moveTo(2, -1.6);
+    ctx.bezierCurveTo(-9, -5, -17, -15, -28, -16);
+    ctx.bezierCurveTo(-26, -9, -22, -3, -18, 0);
+    ctx.bezierCurveTo(-22, 3, -26, 9, -28, 16);
+    ctx.bezierCurveTo(-17, 15, -9, 5, 2, 1.6);
     ctx.closePath();
     ctx.fill();
-
-    // --- Pectoral fins near the head ---
-    const finPhase = Math.sin(koi.phase * 0.8);
-    const finX = spine[2].x;
-    const finY = spine[2].y;
-    const finLen = 8.5 * scale;
-    const finBase = Math.atan2(spine[1].y - spine[2].y, spine[1].x - spine[2].x);
-
-    ctx.fillStyle = `rgba(${baseRGB.r}, ${baseRGB.g}, ${baseRGB.b}, 0.55)`;
-    for (const side of [1, -1]) {
-      const a1 = finBase + side * (1.95 + finPhase * 0.22);
-      const a2 = finBase + side * (2.6 + finPhase * 0.22);
-      const tipX = finX + Math.cos(a1) * finLen;
-      const tipY = finY + Math.sin(a1) * finLen;
-      const backX2 = finX + Math.cos(a2) * finLen * 0.65;
-      const backY2 = finY + Math.sin(a2) * finLen * 0.65;
-
+    ctx.stroke();
+    for (let ray = -3; ray <= 3; ray++) {
       ctx.beginPath();
-      ctx.moveTo(finX, finY);
-      ctx.quadraticCurveTo(
-        finX + Math.cos(finBase + side * 1.2) * finLen * 0.6,
-        finY + Math.sin(finBase + side * 1.2) * finLen * 0.6,
-        tipX, tipY
-      );
-      ctx.quadraticCurveTo(
-        finX + Math.cos(a2) * finLen * 0.45,
-        finY + Math.sin(a2) * finLen * 0.45,
-        backX2, backY2
-      );
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(-12, ray * 1.5, -24 + (3 - Math.abs(ray)) * 2, ray * 4.4);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    for (let side = -1; side <= 1; side += 2) {
+      ctx.save();
+      ctx.translate(spine[3].x, spine[3].y);
+      ctx.rotate(Math.atan2(sinA[3], cosA[3]));
+      ctx.scale(scale, scale * side);
+      const flutter = Math.sin(koi.phase * 0.7 + side * 0.4) * 2;
+      ctx.fillStyle = 'rgba(239, 228, 204, 0.45)';
+      ctx.strokeStyle = 'rgba(255, 244, 218, 0.23)';
+      ctx.lineWidth = 0.6;
+      ctx.beginPath();
+      ctx.moveTo(5, 9);
+      ctx.bezierCurveTo(3, 20, -5, 28 + flutter, -17, 25 + flutter);
+      ctx.bezierCurveTo(-19, 20, -12, 13, -6, 10);
       ctx.closePath();
       ctx.fill();
+      ctx.stroke();
+      for (let ray = 0; ray < 3; ray++) {
+        ctx.beginPath();
+        ctx.moveTo(2 - ray * 2, 11);
+        ctx.quadraticCurveTo(-4 - ray * 3, 18, -9 - ray * 3, 25 + flutter - ray);
+        ctx.stroke();
+      }
+      ctx.restore();
     }
 
-    // --- Body outline (nose -> right side -> tail -> left side -> nose) ---
+    // A continuous quadratic contour removes the old polygonal nose and sides.
     const body = new Path2D();
-    body.moveTo(noseX, noseY);
-    for (let i = 0; i < n; i++) {
-      const w = WIDTH_PROFILE[i] * BASE_BODY_WIDTH * scale;
-      body.lineTo(spine[i].x + sinA[i] * w, spine[i].y - cosA[i] * w);
-    }
-    body.lineTo(spine[n - 1].x - cosA[n - 1] * 4 * scale, spine[n - 1].y - sinA[n - 1] * 4 * scale);
-    for (let i = n - 1; i >= 0; i--) {
-      const w = WIDTH_PROFILE[i] * BASE_BODY_WIDTH * scale;
-      body.lineTo(spine[i].x - sinA[i] * w, spine[i].y + cosA[i] * w);
+    const count = n * 2;
+    body.moveTo((outline[0] + outline[(count - 1) * 2]) / 2,
+      (outline[1] + outline[(count - 1) * 2 + 1]) / 2);
+    for (let i = 0; i < count; i++) {
+      const next = (i + 1) % count;
+      body.quadraticCurveTo(outline[i * 2], outline[i * 2 + 1],
+        (outline[i * 2] + outline[next * 2]) / 2,
+        (outline[i * 2 + 1] + outline[next * 2 + 1]) / 2);
     }
     body.closePath();
 
-    // --- Body fill with head-to-tail gradient ---
-    const bodyGrad = ctx.createLinearGradient(spine[0].x, spine[0].y, spine[n - 1].x, spine[n - 1].y);
-    bodyGrad.addColorStop(0, koi.baseColor);
-    const darkTail = { r: Math.round(baseRGB.r * 0.78), g: Math.round(baseRGB.g * 0.78), b: Math.round(baseRGB.b * 0.78) };
-    bodyGrad.addColorStop(1, `rgb(${darkTail.r}, ${darkTail.g}, ${darkTail.b})`);
-    ctx.fillStyle = bodyGrad;
+    // A small offset silhouette anchors the fish beneath the water surface.
+    ctx.save();
+    ctx.translate(4 * scale, 7 * scale);
+    ctx.fillStyle = 'rgba(1, 17, 23, 0.22)';
     ctx.fill(body);
-
-    // --- Patches and shading, clipped to the body ---
+    ctx.restore();
+    ctx.fillStyle = koi.baseColor;
+    ctx.fill(body);
     ctx.save();
     ctx.clip(body);
-
     for (const patch of koi.patches) {
-      const segIdx = clampInt(patch.segIndex, 0, n - 1);
-      const s = spine[segIdx];
-      const angle = segIdx === 0 ? koi.heading : Math.atan2(spine[segIdx - 1].y - s.y, spine[segIdx - 1].x - s.x);
-      const w = WIDTH_PROFILE[segIdx] * BASE_BODY_WIDTH * scale;
-      const px = s.x + Math.sin(angle) * patch.dx * 2 * w;
-      const py = s.y - Math.cos(angle) * patch.dx * 2 * w;
-      const pr = patch.radius * BASE_BODY_WIDTH * 1.15 * scale;
-
+      const i = patch.segIndex;
+      const w = WIDTH_PROFILE[i] * BASE_BODY_WIDTH * scale;
+      ctx.save();
+      ctx.translate(spine[i].x + sinA[i] * patch.dx * w,
+        spine[i].y - cosA[i] * patch.dx * w);
+      ctx.rotate(Math.atan2(sinA[i], cosA[i]));
+      const radius = patch.radius * BASE_BODY_WIDTH * scale;
+      ctx.scale(radius * 1.35, radius);
       ctx.fillStyle = patch.color;
+      ctx.fill(patch.shape);
+      ctx.restore();
+    }
+
+    // Layered, narrow contours model rounded flanks without per-frame gradients.
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    for (let side = -1; side <= 1; side += 2) {
       ctx.beginPath();
-      ctx.ellipse(px, py, pr, pr * 1.45, angle, 0, Math.PI * 2);
+      for (let i = 0; i < n; i++) {
+        const w = WIDTH_PROFILE[i] * BASE_BODY_WIDTH * scale * 0.88 * side;
+        const x = spine[i].x + sinA[i] * w;
+        const y = spine[i].y - cosA[i] * w;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = side === 1 ? 'rgba(63, 53, 39, 0.2)' : 'rgba(255, 250, 228, 0.22)';
+      ctx.lineWidth = 4 * scale;
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    for (let i = 1; i < n - 4; i++) {
+      const x = spine[i].x - sinA[i] * 2 * scale;
+      const y = spine[i].y + cosA[i] * 2 * scale;
+      if (i === 1) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = 'rgba(255, 252, 230, 0.23)';
+    ctx.lineWidth = 2.2 * scale;
+    ctx.stroke();
+    ctx.restore();
+
+    // Small lateral eyes and quiet gill arcs give the broad head a clear face.
+    ctx.save();
+    ctx.translate(spine[1].x, spine[1].y);
+    ctx.rotate(Math.atan2(sinA[1], cosA[1]));
+    ctx.scale(scale, scale);
+    for (let side = -1; side <= 1; side += 2) {
+      ctx.beginPath();
+      ctx.ellipse(2.7, side * 8.2, 2.1, 1.4, side * 0.2, 0, Math.PI * 2);
+      ctx.fillStyle = '#a48c61';
       ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(3, side * 8.3, 1.25, 1, 0, 0, Math.PI * 2);
+      ctx.fillStyle = '#162629';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(3.4, side * 8.3 - 0.3, 0.4, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255, 255, 240, 0.8)';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-5, side * 4.5);
+      ctx.quadraticCurveTo(-10, side * 8, -7, side * 11);
+      ctx.strokeStyle = 'rgba(65, 50, 36, 0.22)';
+      ctx.lineWidth = 0.75;
+      ctx.stroke();
     }
-
-    // Dark dorsal stripe along the spine for depth.
-    const shadeStart = { r: Math.round(baseRGB.r * 0.62), g: Math.round(baseRGB.g * 0.62), b: Math.round(baseRGB.b * 0.62) };
-    const stripeGrad = ctx.createLinearGradient(spine[0].x, spine[0].y, spine[n - 1].x, spine[n - 1].y);
-    stripeGrad.addColorStop(0, `rgba(${shadeStart.r}, ${shadeStart.g}, ${shadeStart.b}, 0.35)`);
-    stripeGrad.addColorStop(1, `rgba(${shadeStart.r}, ${shadeStart.g}, ${shadeStart.b}, 0.12)`);
-    ctx.fillStyle = stripeGrad;
-    ctx.beginPath();
-    for (let i = 0; i < n; i++) {
-      const c = cosA[i];
-      const s2 = sinA[i];
-      const w = WIDTH_PROFILE[i] * BASE_BODY_WIDTH * scale;
-      const topX = spine[i].x - s2 * w;
-      const topY = spine[i].y + c * w;
-      if (i === 0) ctx.moveTo(topX - c * 8 * scale, topY - s2 * 8 * scale);
-      else ctx.lineTo(topX, topY);
-    }
-    for (let i = n - 1; i >= 0; i--) {
-      const c = cosA[i];
-      const s2 = sinA[i];
-      const w = WIDTH_PROFILE[i] * BASE_BODY_WIDTH * scale;
-      const midX = spine[i].x + s2 * w * 0.12;
-      const midY = spine[i].y - c * w * 0.12;
-      ctx.lineTo(midX, midY);
-    }
-    ctx.closePath();
-    ctx.fill();
-
-    // Wet sheen highlight near the head.
-    ctx.globalCompositeOperation = 'lighter';
-    const hx = spine[1].x;
-    const hy = spine[1].y;
-    const sheen = ctx.createRadialGradient(hx, hy, 0, hx, hy, 16 * scale);
-    sheen.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
-    sheen.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    ctx.fillStyle = sheen;
-    ctx.beginPath();
-    ctx.arc(hx, hy, 16 * scale, 0, Math.PI * 2);
-    ctx.fill();
-
     ctx.restore();
   }
 }
