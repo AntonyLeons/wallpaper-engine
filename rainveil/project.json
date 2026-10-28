@@ -1,0 +1,258 @@
+{
+  "contentrating": "Everyone",
+  "description": "A rain-streaked apartment window overlooking a neon city at night. Layered skylines, drifting bokeh, beads of water on the glass, wet street reflections and occasional lightning, with audio-reactive light and a refined clock. Works offline. Source: https://github.com/AntonyLeons/wallpaper-engine",
+  "file": "index.html",
+  "general": {
+    "properties": {
+      "audioreactive": {
+        "index": 5,
+        "order": 105,
+        "text": "Audio Reactivity",
+        "type": "bool",
+        "value": true
+      },
+      "audiosensitivity": {
+        "index": 6,
+        "max": 3,
+        "min": 0.5,
+        "order": 106,
+        "step": 0.1,
+        "text": "Audio Sensitivity",
+        "type": "slider",
+        "value": 1.5
+      },
+      "bokehcount": {
+        "index": 3,
+        "max": 120,
+        "min": 0,
+        "order": 103,
+        "step": 5,
+        "text": "City Bokeh Lights",
+        "type": "slider",
+        "value": 45
+      },
+      "citypreset": {
+        "index": 0,
+        "options": [
+          {
+            "label": "Midnight Blue",
+            "value": "midnight"
+          },
+          {
+            "label": "Neon District",
+            "value": "neon"
+          },
+          {
+            "label": "Ember Skyline",
+            "value": "ember"
+          },
+          {
+            "label": "Glacier Rain",
+            "value": "glacier"
+          }
+        ],
+        "order": 100,
+        "text": "City Palette",
+        "type": "combo",
+        "value": "midnight"
+      },
+      "clockformat": {
+        "condition": "showclock",
+        "index": 12,
+        "options": [
+          {
+            "label": "24-Hour (14:30)",
+            "value": "24h"
+          },
+          {
+            "label": "12-Hour (02:30 PM)",
+            "value": "12h"
+          }
+        ],
+        "order": 112,
+        "text": "Clock Format",
+        "type": "combo",
+        "value": "24h"
+      },
+      "clockposition": {
+        "condition": "showclock",
+        "index": 13,
+        "options": [
+          {
+            "label": "Top Center",
+            "value": "top_center"
+          },
+          {
+            "label": "Top Left",
+            "value": "top_left"
+          },
+          {
+            "label": "Top Right",
+            "value": "top_right"
+          },
+          {
+            "label": "Center",
+            "value": "center"
+          },
+          {
+            "label": "Bottom Center",
+            "value": "bottom_center"
+          },
+          {
+            "label": "Bottom Left",
+            "value": "bottom_left"
+          },
+          {
+            "label": "Bottom Right",
+            "value": "bottom_right"
+          },
+          {
+            "label": "Custom Position",
+            "value": "custom"
+          }
+        ],
+        "order": 113,
+        "text": "Clock Position",
+        "type": "combo",
+        "value": "bottom_left"
+      },
+      "clockpositionx": {
+        "condition": "clockposition.value == 'custom'",
+        "index": 14,
+        "max": 100,
+        "min": 0,
+        "order": 114,
+        "step": 1,
+        "text": "Clock Horizontal Position (%)",
+        "type": "slider",
+        "value": 50
+      },
+      "clockpositiony": {
+        "condition": "clockposition.value == 'custom'",
+        "index": 15,
+        "max": 100,
+        "min": 0,
+        "order": 115,
+        "step": 1,
+        "text": "Clock Vertical Position (%)",
+        "type": "slider",
+        "value": 10
+      },
+      "lightning": {
+        "index": 4,
+        "order": 104,
+        "text": "Lightning Flashes",
+        "type": "bool",
+        "value": true
+      },
+      "mouseinteraction": {
+        "index": 8,
+        "order": 108,
+        "text": "Mouse Interaction",
+        "type": "bool",
+        "value": true
+      },
+      "primarycolor": {
+        "index": 16,
+        "order": 116,
+        "text": "Primary Neon Color",
+        "type": "color",
+        "value": "0.30 0.85 1.0"
+      },
+      "raindensity": {
+        "index": 1,
+        "max": 100,
+        "min": 0,
+        "order": 101,
+        "step": 5,
+        "text": "Rain Density",
+        "type": "slider",
+        "value": 60
+      },
+      "rainspeed": {
+        "index": 2,
+        "max": 2.5,
+        "min": 0.2,
+        "order": 102,
+        "step": 0.1,
+        "text": "Rain Speed",
+        "type": "slider",
+        "value": 1.0
+      },
+      "schemecolor": {
+        "order": 0,
+        "text": "ui_browse_properties_scheme_color",
+        "type": "color",
+        "value": "0.05 0.09 0.19"
+      },
+      "secondarycolor": {
+        "index": 17,
+        "order": 117,
+        "text": "Secondary Neon Color",
+        "type": "color",
+        "value": "1.0 0.37 0.75"
+      },
+      "showclock": {
+        "index": 10,
+        "order": 110,
+        "text": "Show Digital Clock",
+        "type": "bool",
+        "value": true
+      },
+      "showseconds": {
+        "condition": "showclock",
+        "index": 11,
+        "order": 111,
+        "text": "Show Clock Seconds",
+        "type": "bool",
+        "value": true
+      },
+      "taskbaroffset": {
+        "index": 9,
+        "max": 150,
+        "min": 0,
+        "order": 109,
+        "step": 5,
+        "text": "Bottom Margin / Taskbar Offset (px)",
+        "type": "slider",
+        "value": 48
+      },
+      "visualizerstyle": {
+        "index": 7,
+        "options": [
+          {
+            "label": "Neon Spectrum",
+            "value": "bars"
+          },
+          {
+            "label": "Reflected Waveform",
+            "value": "waveform"
+          },
+          {
+            "label": "Disabled",
+            "value": "off"
+          }
+        ],
+        "order": 107,
+        "text": "Audio Visualizer Style",
+        "type": "combo",
+        "value": "bars"
+      }
+    },
+    "supportsaudioprocessing": true
+  },
+  "preview": "preview.jpg",
+  "ratingsex": "none",
+  "ratingviolence": "none",
+  "resolution": "3840x2160",
+  "tags": [
+    "Abstract",
+    "Cyberpunk"
+  ],
+  "title": "Rainveil | Neon Rain & Clock",
+  "type": "web",
+  "version": 0,
+  "visibility": "public",
+  "workshopid": "0",
+  "workshopurl": ""
+}
