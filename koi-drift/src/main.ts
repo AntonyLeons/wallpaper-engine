@@ -39,6 +39,8 @@ class Application {
 
   private isRunning = false;
   private lastFrameTime = 0;
+  private nextFrameTime = 0;
+  private lastFpsLimit = 0;
   private frameId: number | null = null;
   private readonly animate = (now: number): void => {
     this.frameId = null;
@@ -144,6 +146,7 @@ class Application {
     if (this.isRunning || document.hidden) return;
     this.isRunning = true;
     this.lastFrameTime = performance.now();
+    this.nextFrameTime = this.lastFrameTime;
     this.frameId = requestAnimationFrame(this.animate);
   }
 
@@ -161,14 +164,21 @@ class Application {
     const settings = settingsManager.settings;
     const targetFps = settings.fpsLimit;
 
-    // FPS Limiter Logic
+    if (targetFps !== this.lastFpsLimit) {
+      this.lastFpsLimit = targetFps;
+      this.nextFrameTime = now;
+    }
     if (targetFps > 0) {
       const frameInterval = 1000 / targetFps;
-      const elapsed = now - this.lastFrameTime;
-      if (elapsed < frameInterval - 1) {
+      const timingTolerance = 0.25;
+      if (now + timingTolerance < this.nextFrameTime) {
         this.frameId = requestAnimationFrame(this.animate);
         return;
       }
+      // Keep the intended cadence on displays whose refresh rate is not a
+      // multiple of the FPS limit. Skip missed slots after a stall.
+      const elapsedSlots = Math.floor((now + timingTolerance - this.nextFrameTime) / frameInterval);
+      this.nextFrameTime += (elapsedSlots + 1) * frameInterval;
     }
 
     const deltaTimeSec = Math.min(0.1, (now - this.lastFrameTime) / 1000);

@@ -227,13 +227,16 @@ export class AmbientSystem {
   public renderForeground(ctx: CanvasRenderingContext2D, _height: number): void {
     const size = Math.max(0.65, Math.min(1.6, Math.min(this.width, this.height) / 850));
     ctx.save();
+    const opacity = ctx.globalAlpha;
+    ctx.fillStyle = '#e2e5b5';
     for (const bubble of this.bubbles) {
       const alpha = 0.1 + (Math.sin(this.time * 0.3 + bubble.phase) + 1) * 0.06;
-      ctx.fillStyle = `rgba(226, 229, 181, ${alpha})`;
+      ctx.globalAlpha = opacity * alpha;
       ctx.beginPath();
       ctx.arc(bubble.x * this.width, bubble.y * this.height, bubble.radius * size, 0, Math.PI * 2);
       ctx.fill();
     }
+    ctx.globalAlpha = opacity;
     for (let i = 0; i < this.plantCount; i++) {
       const leaf = LEAVES[i];
       const s = size * leaf[2];

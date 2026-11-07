@@ -147,9 +147,10 @@ export class WaterRenderer {
         const x = Math.sin(this.time * 0.065 + layer * 2) * 30 + this.time * (layer ? -1.3 : 1.8);
         const y = Math.cos(this.time * 0.08 + layer) * 22;
         ctx.scale(s, s);
-        ctx.translate(x % 512, y);
+        const offsetX = x % 512;
+        ctx.translate(offsetX, y);
         ctx.globalAlpha = (layer ? 0.08 : 0.13) + energy * 0.08;
-        ctx.fillRect(-1024, -1024, width / s + 2048, height / s + 2048);
+        ctx.fillRect(-offsetX, -y, width / s, height / s);
         ctx.restore();
       }
       ctx.restore();
