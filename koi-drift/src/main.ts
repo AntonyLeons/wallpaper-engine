@@ -193,13 +193,16 @@ class Application {
     // 5. Floating leaves and glints above the fish
     this.ambientSystem.renderForeground(this.ctx, height);
 
+    // Update the clock before anchoring its companion visualizer.
+    this.clockOverlay.update(settings);
+
     // 6. Audio visualizer
     if (settings.visualizerStyle !== 'off') {
-      this.visualizerRenderer.render(this.ctx, width, height, deltaTimeSec, settings, audioMetrics);
+      const clockBounds = settings.visualizerPosition === 'follow_clock'
+        && settings.showClock && settings.audioReactive && audioMetrics.hasAudio
+        ? this.clockOverlay.getBounds() : null;
+      this.visualizerRenderer.render(this.ctx, width, height, deltaTimeSec, settings, audioMetrics, clockBounds);
     }
-
-    // 7. Update UI Clock Overlay
-    this.clockOverlay.update(settings);
 
     this.frameId = requestAnimationFrame(this.animate);
   }

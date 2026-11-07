@@ -1,6 +1,6 @@
 {
   "contentrating": "Everyone",
-  "description": "A tranquil garden pond seen from above, with koi, floating lily pads, a water lily, submerged stones, drifting caustics and quiet ripples. Includes audio reactivity, an elegant clock and mouse interaction. Lightweight: approximately 226 KB including the preview image. Works offline. Source: https://github.com/AntonyLeons/wallpaper-engine",
+  "description": "A tranquil garden pond seen from above, with koi, floating lily pads, a water lily, submerged stones, drifting caustics and quiet ripples. Includes audio reactivity, an elegant clock and mouse interaction. Lightweight: approximately 230 KB including the preview image. Works offline. Source: https://github.com/AntonyLeons/wallpaper-engine",
   "file": "index.html",
   "general": {
     "properties": {
@@ -215,6 +215,74 @@
         "text": "Audio Visualizer Style",
         "type": "combo",
         "value": "bars"
+      },
+      "visualizerposition": {
+        "index": 18,
+        "order": 116,
+        "condition": "audioreactive.value == true && visualizerstyle.value != 'off'",
+        "text": "Audio Visualizer Position",
+        "type": "combo",
+        "value": "follow_clock",
+        "options": [
+          {
+            "label": "Follow Clock",
+            "value": "follow_clock"
+          },
+          {
+            "label": "Top Left",
+            "value": "top_left"
+          },
+          {
+            "label": "Top Center",
+            "value": "top_center"
+          },
+          {
+            "label": "Top Right",
+            "value": "top_right"
+          },
+          {
+            "label": "Center",
+            "value": "center"
+          },
+          {
+            "label": "Bottom Left",
+            "value": "bottom_left"
+          },
+          {
+            "label": "Bottom Center",
+            "value": "bottom_center"
+          },
+          {
+            "label": "Bottom Right",
+            "value": "bottom_right"
+          },
+          {
+            "label": "Custom Position",
+            "value": "custom"
+          }
+        ]
+      },
+      "visualizerpositionx": {
+        "index": 19,
+        "order": 117,
+        "condition": "audioreactive.value == true && visualizerstyle.value != 'off' && visualizerposition.value == 'custom'",
+        "text": "Audio Visualizer Horizontal Position (%)",
+        "type": "slider",
+        "value": 50,
+        "min": 0,
+        "max": 100,
+        "step": 1
+      },
+      "visualizerpositiony": {
+        "index": 20,
+        "order": 118,
+        "condition": "audioreactive.value == true && visualizerstyle.value != 'off' && visualizerposition.value == 'custom'",
+        "text": "Audio Visualizer Vertical Position (%)",
+        "type": "slider",
+        "value": 100,
+        "min": 0,
+        "max": 100,
+        "step": 1
       },
       "pondpreset": {
         "index": 0,

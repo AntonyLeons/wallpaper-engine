@@ -11,6 +11,9 @@ export interface WallpaperUserProperties {
   audioreactive?: WallpaperProperty;
   audiosensitivity?: WallpaperProperty;
   visualizerstyle?: WallpaperProperty;
+  visualizerposition?: WallpaperProperty;
+  visualizerpositionx?: WallpaperProperty;
+  visualizerpositiony?: WallpaperProperty;
   mousefollow?: WallpaperProperty;
   showclock?: WallpaperProperty;
   showseconds?: WallpaperProperty;

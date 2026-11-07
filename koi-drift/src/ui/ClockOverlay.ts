@@ -19,6 +19,10 @@ export class ClockOverlay {
   private mediaTitle = '';
   private mediaArtist = '';
   private lastPositionKey = '';
+  private bounds: DOMRect | null = null;
+  private boundsDirty = true;
+  private boundsWidth = 0;
+  private boundsHeight = 0;
 
   constructor() {
     this.createDOM();
@@ -70,9 +74,10 @@ export class ClockOverlay {
 
   private updateMediaDisplay(): void {
     if (!this.mediaEl) return;
+    this.boundsDirty = true;
 
     if (this.mediaTitle) {
-      const text = this.mediaArtist ? `${this.mediaTitle} Â· ${this.mediaArtist}` : this.mediaTitle;
+      const text = this.mediaArtist ? `${this.mediaTitle} Ã‚Â· ${this.mediaArtist}` : this.mediaTitle;
       this.mediaEl.textContent = text;
       this.mediaEl.style.display = 'block';
     } else {
@@ -83,6 +88,7 @@ export class ClockOverlay {
   private applyPosition(settings: AppSettings): void {
     if (!this.containerEl) return;
 
+    this.boundsDirty = true;
     const bottomOffset = settings.taskbarOffset + 32;
     this.containerEl.dataset.position = settings.clockPosition;
 
@@ -154,11 +160,25 @@ export class ClockOverlay {
     }
   }
 
+  public getBounds(): DOMRect | null {
+    if (!this.containerEl || !this.visible) return null;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    if (this.boundsDirty || width !== this.boundsWidth || height !== this.boundsHeight) {
+      this.bounds = this.containerEl.getBoundingClientRect();
+      this.boundsWidth = width;
+      this.boundsHeight = height;
+      this.boundsDirty = false;
+    }
+    return this.bounds;
+  }
+
   public update(settings: AppSettings): void {
     if (!this.containerEl || !this.timeEl || !this.dateEl) return;
 
     if (this.visible !== settings.showClock) {
       this.visible = settings.showClock;
+      this.boundsDirty = true;
       this.containerEl.style.opacity = settings.showClock ? '1' : '0';
     }
     if (!settings.showClock) return;
@@ -198,6 +218,7 @@ export class ClockOverlay {
       if (this.digitsEl) this.digitsEl.textContent = `${hoursStr}:${minutes}`;
       if (this.secondsEl) this.secondsEl.textContent = `${secondsStr}${ampm}`;
       this.lastFormattedTime = timeStr;
+      this.boundsDirty = true;
     }
 
     const dateStr = this.dateFormatter.format(now);
@@ -205,6 +226,7 @@ export class ClockOverlay {
     if (dateStr !== this.lastFormattedDate) {
       this.dateEl.textContent = dateStr.toUpperCase();
       this.lastFormattedDate = dateStr;
+      this.boundsDirty = true;
     }
   }
 }

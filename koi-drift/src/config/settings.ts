@@ -2,6 +2,15 @@ import { WallpaperUserProperties } from '../types/wallpaper';
 
 export type PondPreset = 'lagoon' | 'sunset' | 'jade' | 'dusk';
 export type VisualizerStyle = 'bars' | 'waveform' | 'off';
+export const VISUALIZER_POSITIONS = [
+  'follow_clock',
+  'top_left', 'top_center', 'top_right', 'center',
+  'bottom_left', 'bottom_center', 'bottom_right', 'custom',
+] as const;
+export type VisualizerPosition = typeof VISUALIZER_POSITIONS[number];
+function isVisualizerPosition(value: string): value is VisualizerPosition {
+  return (VISUALIZER_POSITIONS as readonly string[]).includes(value);
+}
 export type ClockFormat = '12h' | '24h';
 export type ClockPosition =
   | 'top_center'
@@ -82,6 +91,9 @@ export interface AppSettings {
   audioReactive: boolean;
   audioSensitivity: number;
   visualizerStyle: VisualizerStyle;
+  visualizerPosition: VisualizerPosition;
+  visualizerPositionX: number; // 0..100 (%)
+  visualizerPositionY: number; // 0..100 (%)
   mouseFollow: boolean;
   showClock: boolean;
   showSeconds: boolean;
@@ -104,6 +116,9 @@ export const DEFAULT_SETTINGS: AppSettings = {
   audioReactive: true,
   audioSensitivity: 1.5,
   visualizerStyle: 'bars',
+  visualizerPosition: 'follow_clock',
+  visualizerPositionX: 50,
+  visualizerPositionY: 100,
   mouseFollow: true,
   showClock: true,
   showSeconds: true,
@@ -143,6 +158,20 @@ class SettingsManager {
     const vis = (params.get('visualizer') || params.get('visualizerstyle'))?.toLowerCase() as VisualizerStyle;
     if (vis && (vis === 'bars' || vis === 'waveform' || vis === 'off')) {
       this.currentSettings.visualizerStyle = vis;
+    }
+
+    const visualizerPosition = params.get('visualizerposition')?.toLowerCase();
+    if (visualizerPosition && isVisualizerPosition(visualizerPosition)) {
+      this.currentSettings.visualizerPosition = visualizerPosition;
+    }
+    for (const [key, setting] of [
+      ['visualizerpositionx', 'visualizerPositionX'],
+      ['visualizerpositiony', 'visualizerPositionY'],
+    ] as const) {
+      const raw = params.get(key);
+      if (raw === null || raw.trim() === '') continue;
+      const value = Number(raw);
+      if (Number.isFinite(value)) this.currentSettings[setting] = Math.max(0, Math.min(100, value));
     }
 
     const fish = params.get('fish') || params.get('fishcount');
@@ -256,6 +285,26 @@ class SettingsManager {
       const vis = String(properties.visualizerstyle.value).toLowerCase() as VisualizerStyle;
       if (vis === 'bars' || vis === 'waveform' || vis === 'off') {
         this.currentSettings.visualizerStyle = vis;
+        changed = true;
+      }
+    }
+
+    if (properties.visualizerposition?.value !== undefined) {
+      const position = String(properties.visualizerposition.value).toLowerCase();
+      if (isVisualizerPosition(position)) {
+        this.currentSettings.visualizerPosition = position;
+        changed = true;
+      }
+    }
+    for (const [key, setting] of [
+      ['visualizerpositionx', 'visualizerPositionX'],
+      ['visualizerpositiony', 'visualizerPositionY'],
+    ] as const) {
+      const raw = properties[key]?.value;
+      if (typeof raw !== 'number' && (typeof raw !== 'string' || raw.trim() === '')) continue;
+      const value = Number(raw);
+      if (Number.isFinite(value)) {
+        this.currentSettings[setting] = Math.max(0, Math.min(100, value));
         changed = true;
       }
     }

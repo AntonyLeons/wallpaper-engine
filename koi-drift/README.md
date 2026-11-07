@@ -15,9 +15,8 @@ Two controls now describe the new visuals:
 - `bubblecount` is labelled **Drifting Glints** and controls small suspended surface particles (0 hides them).
 
 `visualizerstyle` retains `bars`, `waveform` and `off`; bars and waveforms now form
-a compact display along the bottom centre. Audio effects stay hidden without audio.
-`project.json` changes are limited to these display labels and the scene description;
-no property keys, values or Workshop identity fields change.
+a compact display with configurable placement (follows the clock by default). Audio effects stay hidden without audio.
+Existing property keys, defaults and Workshop identity fields are preserved.
 
 Water and stone artwork is cached at a maximum dimension of 1536 pixels. Caustics
 reuse one periodic 512px tile, while leaf and flower sprites are generated only on
@@ -58,3 +57,23 @@ clock, a short cursor/ripple demonstration and an original ambient bell-and-pad 
 The spectrum demonstration follows the cue's note frequencies and envelopes. Swim
 speed is set to 0.65 for the preview. Video, poster and WAV files stay outside the
 production package; the live wallpaper defaults and download size are unchanged.
+
+## Audio visualizer placement
+
+**Audio Visualizer Position** defaults to **Follow Clock**, grouping the clock and
+visualizer. The visualizer centres on the clock and sits below it when space allows,
+or above it near the bottom edge. It follows clock presets, custom placement, size,
+media text and resizing. Bounds are cached and measured only after layout changes.
+With the clock hidden, the visualizer falls back to bottom centre.
+
+Separate top-left, top-centre, top-right, centre, bottom-left, bottom-centre,
+bottom-right and custom positions remain available. Custom placement uses horizontal
+and vertical percentage sliders. Both bars and waveform support every position.
+The bottom margin/taskbar offset is respected; the complete visualizer stays visible.
+
+New `project.json` properties: `visualizerposition` (default `follow_clock`),
+`visualizerpositionx` (50) and `visualizerpositiony` (100). Placement controls are
+shown only when audio reactivity is enabled and the visualizer is not disabled;
+the sliders additionally require custom placement. Explicitly saved positions are
+preserved. Run `pnpm --filter wallpaper-engine-koi-drift test:visualizer` to check
+placement, validation and resize behavior.
