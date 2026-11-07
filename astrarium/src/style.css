@@ -1,0 +1,109 @@
+* {
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  user-select: none;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  color: #f2e7cd;
+  background: #080d14;
+  width: 100%;
+  height: 100%;
+  font-family: Georgia, 'Times New Roman', serif;
+  overflow: hidden;
+}
+
+#wallpaper-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  position: absolute;
+  inset: 0;
+}
+
+.clock-hud {
+  z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+  text-shadow: 0 2px 20px #04080fcc;
+  flex-direction: column;
+  align-items: flex-end;
+  max-width: 90vw;
+  padding: 14px 0;
+  transition: opacity 0.5s;
+  display: flex;
+  position: absolute;
+}
+
+.clock-hud::before {
+  content: '';
+  background: linear-gradient(90deg, #0000, #d9b774, #0000);
+  width: 46px;
+  height: 1px;
+  margin-bottom: 18px;
+  display: block;
+}
+
+.clock-time {
+  white-space: nowrap;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: 0.02em;
+  color: #f2e7cd;
+  align-items: baseline;
+  font-size: clamp(38px, 4vw, 78px);
+  font-weight: 400;
+  line-height: 1;
+  display: flex;
+}
+
+.clock-seconds {
+  letter-spacing: 0.12em;
+  color: #d9b774;
+  margin-left: 6px;
+  font-size: 0.36em;
+}
+
+.clock-date {
+  letter-spacing: 0.3em;
+  color: #ebdcba9e;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+  margin-top: 16px;
+  font-size: clamp(9px, 0.7vw, 12px);
+  line-height: 1.6;
+}
+
+.clock-media {
+  color: #f2e7cdcc;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  border-top: 1px solid #d9b77438;
+  max-width: min(360px, 85vw);
+  margin-top: 16px;
+  padding-top: 12px;
+  font-size: 11px;
+  overflow: hidden;
+}
+
+.clock-hud[data-position='top_left'],
+.clock-hud[data-position='bottom_left'] { align-items: flex-start; }
+
+.clock-hud[data-position='center'],
+.clock-hud[data-position='top_center'],
+.clock-hud[data-position='bottom_center'],
+.clock-hud[data-position='custom'] { text-align: center; align-items: center; }
+
+@media (max-width: 600px) {
+  .clock-time { font-size: 42px; }
+  .clock-date { letter-spacing: 0.18em; font-size: 9px; }
+}
+
+@media (max-height: 500px) {
+  .clock-time { font-size: 34px; }
+  .clock-hud::before { margin-bottom: 10px; }
+  .clock-date { margin-top: 8px; }
+}

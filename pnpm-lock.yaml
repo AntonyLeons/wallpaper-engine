@@ -24,6 +24,30 @@ importers:
         specifier: ^8.1.5
         version: 8.1.5(esbuild@0.28.1)
 
+  astrarium:
+    devDependencies:
+      esbuild:
+        specifier: ^0.28.1
+        version: 0.28.1
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vite:
+        specifier: ^8.1.5
+        version: 8.1.5(esbuild@0.28.1)
+
+  horologium:
+    devDependencies:
+      esbuild:
+        specifier: ^0.28.1
+        version: 0.28.1
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vite:
+        specifier: ^8.1.5
+        version: 8.1.5(esbuild@0.28.1)
+
   koi-drift:
     devDependencies:
       esbuild:

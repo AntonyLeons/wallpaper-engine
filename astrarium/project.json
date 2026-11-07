@@ -1,0 +1,266 @@
+{
+  "contentrating": "Everyone",
+  "description": "A clockwork orrery and astronomical clock rendered entirely in Canvas 2D: engraved brass dials, meshing gears, armillary rings, orbiting planets, a glowing sun, analog hands and an engraved star chart. Includes audio reactivity, an optional digital clock, mouse parallax and four metal presets. Fully procedural, offline and lightweight. Source: https://github.com/AntonyLeons/wallpaper-engine",
+  "file": "index.html",
+  "general": {
+    "properties": {
+      "audioreactive": {
+        "index": 5,
+        "order": 105,
+        "text": "Audio Reactivity",
+        "type": "bool",
+        "value": true
+      },
+      "audiosensitivity": {
+        "condition": "audioreactive",
+        "index": 6,
+        "max": 3,
+        "min": 0.5,
+        "order": 106,
+        "step": 0.1,
+        "text": "Audio Sensitivity",
+        "type": "slider",
+        "value": 1.5
+      },
+      "clockformat": {
+        "condition": "showclock",
+        "index": 14,
+        "options": [
+          {
+            "label": "24-Hour (14:30)",
+            "value": "24h"
+          },
+          {
+            "label": "12-Hour (02:30 PM)",
+            "value": "12h"
+          }
+        ],
+        "order": 114,
+        "text": "Clock Format",
+        "type": "combo",
+        "value": "24h"
+      },
+      "clockhands": {
+        "index": 11,
+        "order": 111,
+        "text": "Analog Clock Hands",
+        "type": "bool",
+        "value": true
+      },
+      "clockposition": {
+        "condition": "showclock",
+        "index": 15,
+        "options": [
+          {
+            "label": "Top Center",
+            "value": "top_center"
+          },
+          {
+            "label": "Top Left",
+            "value": "top_left"
+          },
+          {
+            "label": "Top Right",
+            "value": "top_right"
+          },
+          {
+            "label": "Center",
+            "value": "center"
+          },
+          {
+            "label": "Bottom Center",
+            "value": "bottom_center"
+          },
+          {
+            "label": "Bottom Left",
+            "value": "bottom_left"
+          },
+          {
+            "label": "Bottom Right",
+            "value": "bottom_right"
+          },
+          {
+            "label": "Custom Position",
+            "value": "custom"
+          }
+        ],
+        "order": 115,
+        "text": "Clock Position",
+        "type": "combo",
+        "value": "bottom_right"
+      },
+      "clockpositionx": {
+        "condition": "clockposition.value == 'custom'",
+        "index": 16,
+        "max": 100,
+        "min": 0,
+        "order": 116,
+        "step": 1,
+        "text": "Clock Horizontal Position (%)",
+        "type": "slider",
+        "value": 50
+      },
+      "clockpositiony": {
+        "condition": "clockposition.value == 'custom'",
+        "index": 17,
+        "max": 100,
+        "min": 0,
+        "order": 117,
+        "step": 1,
+        "text": "Clock Vertical Position (%)",
+        "type": "slider",
+        "value": 10
+      },
+      "gearcount": {
+        "index": 3,
+        "max": 12,
+        "min": 0,
+        "order": 103,
+        "step": 1,
+        "text": "Clockwork Gears",
+        "type": "slider",
+        "value": 6
+      },
+      "mouseparallax": {
+        "index": 8,
+        "order": 108,
+        "text": "Mouse Parallax",
+        "type": "bool",
+        "value": true
+      },
+      "orbitspeed": {
+        "index": 1,
+        "max": 3,
+        "min": 0.1,
+        "order": 101,
+        "step": 0.1,
+        "text": "Orbit Speed",
+        "type": "slider",
+        "value": 1
+      },
+      "planetcount": {
+        "index": 2,
+        "max": 9,
+        "min": 0,
+        "order": 102,
+        "step": 1,
+        "text": "Planet Count",
+        "type": "slider",
+        "value": 6
+      },
+      "preset": {
+        "index": 0,
+        "options": [
+          {
+            "label": "Antique Brass",
+            "value": "brass"
+          },
+          {
+            "label": "Midnight Silver",
+            "value": "silver"
+          },
+          {
+            "label": "Verdigris Copper",
+            "value": "verdigris"
+          },
+          {
+            "label": "Rose Gold",
+            "value": "rose"
+          }
+        ],
+        "order": 100,
+        "text": "Preset Theme",
+        "type": "combo",
+        "value": "brass"
+      },
+      "primarycolor": {
+        "index": 9,
+        "order": 109,
+        "text": "Primary Accent Color",
+        "type": "color",
+        "value": "0.9 0.73 0.43"
+      },
+      "schemecolor": {
+        "order": 0,
+        "text": "ui_browse_properties_scheme_color",
+        "type": "color",
+        "value": "0 0 0"
+      },
+      "secondarycolor": {
+        "index": 10,
+        "order": 110,
+        "text": "Secondary Accent Color",
+        "type": "color",
+        "value": "0.47 0.77 0.78"
+      },
+      "showclock": {
+        "index": 12,
+        "order": 112,
+        "text": "Show Digital Clock",
+        "type": "bool",
+        "value": true
+      },
+      "showseconds": {
+        "index": 13,
+        "order": 113,
+        "text": "Show Clock Seconds",
+        "type": "bool",
+        "value": true
+      },
+      "stardensity": {
+        "index": 4,
+        "max": 300,
+        "min": 0,
+        "order": 104,
+        "step": 10,
+        "text": "Star Chart Density",
+        "type": "slider",
+        "value": 140
+      },
+      "taskbaroffset": {
+        "index": 18,
+        "max": 150,
+        "min": 0,
+        "order": 118,
+        "step": 5,
+        "text": "Bottom Margin / Taskbar Offset (px)",
+        "type": "slider",
+        "value": 48
+      },
+      "visualizerstyle": {
+        "condition": "audioreactive",
+        "index": 7,
+        "options": [
+          {
+            "label": "Orbit Spectrum",
+            "value": "orbit"
+          },
+          {
+            "label": "Radial Halo",
+            "value": "radial"
+          },
+          {
+            "label": "Disabled",
+            "value": "off"
+          }
+        ],
+        "order": 107,
+        "text": "Audio Visualizer Style",
+        "type": "combo",
+        "value": "orbit"
+      }
+    },
+    "supportsaudioprocessing": true
+  },
+  "preview": "preview.jpg",
+  "ratingsex": "none",
+  "ratingviolence": "none",
+  "resolution": "3840x2160",
+  "tags": [
+    "Abstract"
+  ],
+  "title": "Astrarium | Clockwork Orrery Wallpaper",
+  "type": "web",
+  "version": 0,
+  "visibility": "public"
+}

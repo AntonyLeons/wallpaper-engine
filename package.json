@@ -14,6 +14,10 @@
     "build:koi": "pnpm --filter wallpaper-engine-koi-drift build",
     "dev:rainveil": "pnpm --filter wallpaper-engine-rainveil dev",
     "build:rainveil": "pnpm --filter wallpaper-engine-rainveil build",
+    "dev:astrarium": "pnpm --filter wallpaper-engine-astrarium dev",
+    "build:astrarium": "pnpm --filter wallpaper-engine-astrarium build",
+    "dev:horologium": "pnpm --filter wallpaper-engine-horologium dev",
+    "build:horologium": "pnpm --filter wallpaper-engine-horologium build",
     "generate:preview": "node scripts/generate_preview.js"
   },
   "devDependencies": {

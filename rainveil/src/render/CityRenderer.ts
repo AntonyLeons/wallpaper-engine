@@ -136,6 +136,11 @@ export class CityRenderer {
     this.facadeLighting(ctx, w * 0.17 + 8, 614, 88, this.secondary);
     this.facadeLighting(ctx, w * 0.61 + 122, 675, 54, this.primary);
     this.facadeLighting(ctx, w * 0.82 + 8, 701, 68, '255,187,124');
+    this.neonSign(ctx, w * 0.17 + 108, 510, '居酒屋', this.secondary, true);
+    this.neonSign(ctx, w * 0.17 + 17, 688, 'ラーメン', '255,190,113', false);
+    this.neonSign(ctx, w * 0.61 - 116, 666, '茶餐廳', '255,105,81', false);
+    this.neonSign(ctx, w * 0.61 + 175, 570, '麻雀館', this.primary, true);
+    this.pawnSign(ctx, w * 0.82 + 79, 603);
     // Low-lying mist softens the base of the skyline, leaving the crowns clear.
     this.glow(ctx, w * 0.34, 704, w * 0.42, 118, this.secondary, 0.075);
     this.glow(ctx, w * 0.64, 695, w * 0.44, 104, this.primary, 0.14);
@@ -272,6 +277,70 @@ export class CityRenderer {
         ctx.fillRect(x + offset, y + floor * 12 + 1, 6, 1);
       }
     }
+    ctx.restore();
+  }
+
+  private neonSign(ctx: CanvasRenderingContext2D, x: number, y: number,
+    label: string, color: string, vertical: boolean): void {
+    const width = vertical ? 28 : label.length * 19 + 13;
+    const height = vertical ? label.length * 25 + 12 : 27;
+    this.glow(ctx, x + width / 2, y + height / 2, width * 1.45, height * 0.95, color, 0.24);
+    ctx.save();
+    if (vertical) {
+      // Steel arms carry the blade beyond the edge of the facade.
+      ctx.fillStyle = '#2b3238';
+      ctx.fillRect(x - 13, y + 10, 16, 2);
+      ctx.fillRect(x - 13, y + height - 14, 16, 2);
+    }
+    ctx.fillStyle = 'rgba(1,4,8,0.66)';
+    ctx.fillRect(x + 3, y + 3, width, height);
+    ctx.fillStyle = '#19161d';
+    ctx.fillRect(x, y, width, height);
+    ctx.fillStyle = `rgba(${color},0.55)`;
+    if (vertical) {
+      ctx.fillRect(x + 3, y + 5, 1, height - 10);
+    } else {
+      ctx.fillRect(x + 2, y + height - 3, width - 4, 1);
+    }
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `500 ${vertical ? 19 : 17}px "Yu Gothic", "Microsoft JhengHei", "MingLiU", sans-serif`;
+    ctx.shadowBlur = 9;
+    ctx.shadowColor = `rgb(${color})`;
+    ctx.fillStyle = `rgb(${color})`;
+    if (vertical) {
+      Array.from(label).forEach((glyph, row) => ctx.fillText(glyph, x + width / 2 + 1, y + 19 + row * 25));
+    } else {
+      ctx.fillText(label, x + width / 2, y + 13);
+    }
+    ctx.restore();
+  }
+
+  private pawnSign(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+    const amber = '255,177,84';
+    this.glow(ctx, x, y, 52, 47, amber, 0.24);
+    ctx.save();
+    ctx.fillStyle = '#383237';
+    ctx.fillRect(x - 31, y - 8, 24, 3);
+    ctx.beginPath();
+    ctx.moveTo(x, y - 23);
+    ctx.lineTo(x + 24, y - 8);
+    ctx.lineTo(x + 17, y + 19);
+    ctx.lineTo(x - 17, y + 19);
+    ctx.lineTo(x - 24, y - 8);
+    ctx.closePath();
+    ctx.fillStyle = '#261720';
+    ctx.fill();
+    ctx.strokeStyle = `rgba(${amber},0.83)`;
+    ctx.shadowColor = `rgb(${amber})`;
+    ctx.shadowBlur = 8;
+    ctx.lineWidth = 1.3;
+    ctx.stroke();
+    ctx.fillStyle = `rgb(${amber})`;
+    ctx.font = '500 22px "Microsoft JhengHei", "MingLiU", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('當', x, y + 1);
     ctx.restore();
   }
 

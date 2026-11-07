@@ -1,0 +1,261 @@
+{
+  "contentrating": "Everyone",
+  "description": "A fully procedural brass resonance engine: interlocking gear rings, engraved chapter dials, orbiting bodies, a glowing core and drifting sparks. Audio drives the mechanism, an optional engraved clock and a configurable resonance gauge. Lightweight, works offline, no external assets. Source: https://github.com/AntonyLeons/wallpaper-engine",
+  "file": "index.html",
+  "general": {
+    "properties": {
+      "audiosensitivity": {
+        "condition": "audioreactive",
+        "index": 7,
+        "max": 3,
+        "min": 0.5,
+        "order": 107,
+        "step": 0.1,
+        "text": "Audio Sensitivity",
+        "type": "slider",
+        "value": 1.5
+      },
+      "audioreactive": {
+        "index": 6,
+        "order": 106,
+        "text": "Audio Reactivity",
+        "type": "bool",
+        "value": true
+      },
+      "clockformat": {
+        "condition": "showclock",
+        "index": 15,
+        "options": [
+          { "label": "24-Hour (14:30)", "value": "24h" },
+          { "label": "12-Hour (02:30 PM)", "value": "12h" }
+        ],
+        "order": 115,
+        "text": "Clock Format",
+        "type": "combo",
+        "value": "24h"
+      },
+      "clockposition": {
+        "condition": "showclock",
+        "index": 16,
+        "options": [
+          { "label": "Top Center", "value": "top_center" },
+          { "label": "Top Left", "value": "top_left" },
+          { "label": "Top Right", "value": "top_right" },
+          { "label": "Center", "value": "center" },
+          { "label": "Bottom Center", "value": "bottom_center" },
+          { "label": "Bottom Left", "value": "bottom_left" },
+          { "label": "Bottom Right", "value": "bottom_right" },
+          { "label": "Custom Position", "value": "custom" }
+        ],
+        "order": 116,
+        "text": "Clock Position",
+        "type": "combo",
+        "value": "bottom_right"
+      },
+      "clockpositionx": {
+        "condition": "clockposition.value == 'custom'",
+        "index": 17,
+        "max": 100,
+        "min": 0,
+        "order": 117,
+        "step": 1,
+        "text": "Clock Horizontal Position (%)",
+        "type": "slider",
+        "value": 50
+      },
+      "clockpositiony": {
+        "condition": "clockposition.value == 'custom'",
+        "index": 18,
+        "max": 100,
+        "min": 0,
+        "order": 118,
+        "step": 1,
+        "text": "Clock Vertical Position (%)",
+        "type": "slider",
+        "value": 10
+      },
+      "clockworkpreset": {
+        "index": 0,
+        "options": [
+          { "label": "Brass Workshop", "value": "brass" },
+          { "label": "Verdigris Copper", "value": "verdigris" },
+          { "label": "Midnight Steel", "value": "midnight" },
+          { "label": "Rose Gold", "value": "rose" }
+        ],
+        "order": 100,
+        "text": "Mechanism Finish",
+        "type": "combo",
+        "value": "brass"
+      },
+      "gearcount": {
+        "index": 1,
+        "max": 12,
+        "min": 3,
+        "order": 101,
+        "step": 1,
+        "text": "Gear Rings",
+        "type": "slider",
+        "value": 7
+      },
+      "glowintensity": {
+        "index": 5,
+        "max": 2,
+        "min": 0,
+        "order": 105,
+        "step": 0.1,
+        "text": "Core Glow",
+        "type": "slider",
+        "value": 1
+      },
+      "mouseparallax": {
+        "index": 12,
+        "order": 112,
+        "text": "Mouse Parallax",
+        "type": "bool",
+        "value": true
+      },
+      "orbitcount": {
+        "index": 3,
+        "max": 12,
+        "min": 0,
+        "order": 103,
+        "step": 1,
+        "text": "Orbiting Bodies",
+        "type": "slider",
+        "value": 5
+      },
+      "primarycolor": {
+        "index": 20,
+        "order": 120,
+        "text": "Primary Accent Color",
+        "type": "color",
+        "value": "1.0 0.72 0.30"
+      },
+      "rotationspeed": {
+        "index": 2,
+        "max": 3,
+        "min": 0.1,
+        "order": 102,
+        "step": 0.1,
+        "text": "Rotation Speed",
+        "type": "slider",
+        "value": 1
+      },
+      "schemecolor": {
+        "order": 0,
+        "text": "ui_browse_properties_scheme_color",
+        "type": "color",
+        "value": "0 0 0"
+      },
+      "secondarycolor": {
+        "index": 21,
+        "order": 121,
+        "text": "Secondary Accent Color",
+        "type": "color",
+        "value": "0.30 0.82 0.78"
+      },
+      "showclock": {
+        "index": 13,
+        "order": 113,
+        "text": "Show Engraved Clock",
+        "type": "bool",
+        "value": true
+      },
+      "showseconds": {
+        "condition": "showclock",
+        "index": 14,
+        "order": 114,
+        "text": "Show Clock Seconds",
+        "type": "bool",
+        "value": true
+      },
+      "sparkcount": {
+        "index": 4,
+        "max": 120,
+        "min": 0,
+        "order": 104,
+        "step": 10,
+        "text": "Drifting Sparks",
+        "type": "slider",
+        "value": 40
+      },
+      "taskbaroffset": {
+        "condition": "showclock",
+        "index": 19,
+        "max": 150,
+        "min": 0,
+        "order": 119,
+        "step": 5,
+        "text": "Bottom Margin / Taskbar Offset (px)",
+        "type": "slider",
+        "value": 48
+      },
+      "visualizerposition": {
+        "condition": "audioreactive.value == true && visualizerstyle.value != 'off'",
+        "index": 9,
+        "options": [
+          { "label": "Follow Clock", "value": "follow_clock" },
+          { "label": "Top Left", "value": "top_left" },
+          { "label": "Top Center", "value": "top_center" },
+          { "label": "Top Right", "value": "top_right" },
+          { "label": "Center", "value": "center" },
+          { "label": "Bottom Left", "value": "bottom_left" },
+          { "label": "Bottom Center", "value": "bottom_center" },
+          { "label": "Bottom Right", "value": "bottom_right" },
+          { "label": "Custom Position", "value": "custom" }
+        ],
+        "order": 109,
+        "text": "Resonance Gauge Position",
+        "type": "combo",
+        "value": "follow_clock"
+      },
+      "visualizerpositionx": {
+        "condition": "audioreactive.value == true && visualizerstyle.value != 'off' && visualizerposition.value == 'custom'",
+        "index": 10,
+        "max": 100,
+        "min": 0,
+        "order": 110,
+        "step": 1,
+        "text": "Gauge Horizontal Position (%)",
+        "type": "slider",
+        "value": 50
+      },
+      "visualizerpositiony": {
+        "condition": "audioreactive.value == true && visualizerstyle.value != 'off' && visualizerposition.value == 'custom'",
+        "index": 11,
+        "max": 100,
+        "min": 0,
+        "order": 111,
+        "step": 1,
+        "text": "Gauge Vertical Position (%)",
+        "type": "slider",
+        "value": 100
+      },
+      "visualizerstyle": {
+        "condition": "audioreactive",
+        "index": 8,
+        "options": [
+          { "label": "Resonance Needles", "value": "bars" },
+          { "label": "Oscilloscope Trace", "value": "waveform" },
+          { "label": "Disabled", "value": "off" }
+        ],
+        "order": 108,
+        "text": "Resonance Gauge Style",
+        "type": "combo",
+        "value": "bars"
+      }
+    },
+    "supportsaudioprocessing": true
+  },
+  "preview": "preview.jpg",
+  "ratingsex": "none",
+  "ratingviolence": "none",
+  "resolution": "3840x2160",
+  "tags": [
+    "Abstract"
+  ],
+  "title": "Horologium | Resonance Engine",
+  "type": "web",
+  "version": 0,
+  "visibility": "public"
+}
