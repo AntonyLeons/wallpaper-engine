@@ -42,90 +42,78 @@ export class GearSystem {
     if (!ctx) return canvas;
     ctx.translate(size / 2, size / 2);
 
-    const teeth = Math.max(9, Math.round(radius / 8));
-    const rootRadius = radius * 0.87;
-    const path = new Path2D();
+    const teeth = Math.max(12, Math.round(radius / 5));
+    const rootRadius = radius * 0.94;
+    const pitch = TAU / teeth;
+    const outline = new Path2D();
+    outline.moveTo(rootRadius, 0);
     for (let i = 0; i < teeth; i++) {
-      const a0 = i / teeth * TAU;
-      const a1 = (i + 0.24) / teeth * TAU;
-      const a2 = (i + 0.62) / teeth * TAU;
-      const a3 = (i + 0.86) / teeth * TAU;
-      if (i === 0) path.moveTo(Math.cos(a0) * rootRadius, Math.sin(a0) * rootRadius);
-      else path.lineTo(Math.cos(a0) * rootRadius, Math.sin(a0) * rootRadius);
-      path.lineTo(Math.cos(a1) * radius, Math.sin(a1) * radius);
-      path.lineTo(Math.cos(a2) * radius, Math.sin(a2) * radius);
-      path.lineTo(Math.cos(a3) * rootRadius, Math.sin(a3) * rootRadius);
+      const angle = i * pitch;
+      outline.arc(0, 0, rootRadius, angle, angle + pitch * 0.19);
+      outline.lineTo(radius * Math.cos(angle + pitch * 0.36), radius * Math.sin(angle + pitch * 0.36));
+      outline.arc(0, 0, radius, angle + pitch * 0.36, angle + pitch * 0.64);
+      outline.lineTo(rootRadius * Math.cos(angle + pitch * 0.81), rootRadius * Math.sin(angle + pitch * 0.81));
+      outline.arc(0, 0, rootRadius, angle + pitch * 0.81, angle + pitch);
     }
-    path.closePath();
+    outline.closePath();
 
-    const gradient = ctx.createRadialGradient(-radius * 0.32, -radius * 0.32, radius * 0.08, 0, 0, radius);
-    gradient.addColorStop(0, palette.brassLight);
-    gradient.addColorStop(0.5, palette.brass);
-    gradient.addColorStop(1, palette.brassDark);
-    ctx.fillStyle = gradient;
-    ctx.fill(path);
-    ctx.globalAlpha = 0.55;
+    // Open sectors leave five tapered spokes and let the star field show through.
+    const openings = new Path2D();
+    const spokes = 5;
+    for (let i = 0; i < spokes; i++) {
+      const angle = i * TAU / spokes;
+      const end = angle + TAU / spokes;
+      const outer = radius * 0.76;
+      const inner = radius * 0.31;
+      openings.moveTo(outer * Math.cos(angle + 0.09), outer * Math.sin(angle + 0.09));
+      openings.arc(0, 0, outer, angle + 0.09, end - 0.09);
+      openings.arc(0, 0, inner, end - 0.23, angle + 0.23, true);
+      openings.closePath();
+    }
+    const wheel = new Path2D(outline);
+    wheel.addPath(openings);
+
+    const metal = ctx.createLinearGradient(-radius, -radius, radius, radius);
+    metal.addColorStop(0, palette.brassLight);
+    metal.addColorStop(0.32, palette.brass);
+    metal.addColorStop(0.57, palette.brassDark);
+    metal.addColorStop(0.82, palette.brass);
+    metal.addColorStop(1, palette.brassDark);
+    ctx.fillStyle = palette.brassDark;
+    ctx.save();
+    ctx.translate(1, Math.max(1, radius * 0.018));
+    ctx.fill(wheel, 'evenodd');
+    ctx.restore();
+    ctx.fillStyle = metal;
+    ctx.fill(wheel, 'evenodd');
+
+    ctx.globalAlpha = 0.58;
     ctx.strokeStyle = palette.brassLight;
-    ctx.lineWidth = 1.2;
-    ctx.stroke(path);
-
-    ctx.globalAlpha = 0.5;
-    ctx.strokeStyle = palette.brassDark;
-    ctx.lineWidth = Math.max(1, radius * 0.02);
-    ctx.beginPath();
-    ctx.arc(0, 0, radius * 0.78, 0, TAU);
-    ctx.stroke();
-    ctx.globalAlpha = 0.28;
-    ctx.strokeStyle = palette.brassLight;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.arc(0, 0, radius * 0.755, 0, TAU);
-    ctx.stroke();
-
-    for (let i = 0; i < 6; i++) {
-      const angle = i / 6 * TAU;
-      const half = 0.11;
+    ctx.lineWidth = 0.8;
+    ctx.stroke(outline);
+    ctx.globalAlpha = 0.36;
+    ctx.stroke(openings);
+    for (const ring of [0.81, 0.875, 0.24, 0.17]) {
       ctx.beginPath();
-      ctx.moveTo(Math.cos(angle - half) * radius * 0.22, Math.sin(angle - half) * radius * 0.22);
-      ctx.lineTo(Math.cos(angle - half * 0.6) * radius * 0.72, Math.sin(angle - half * 0.6) * radius * 0.72);
-      ctx.lineTo(Math.cos(angle + half * 0.6) * radius * 0.72, Math.sin(angle + half * 0.6) * radius * 0.72);
-      ctx.lineTo(Math.cos(angle + half) * radius * 0.22, Math.sin(angle + half) * radius * 0.22);
-      ctx.closePath();
-      ctx.globalAlpha = 0.32;
-      ctx.fillStyle = palette.brassDark;
-      ctx.fill();
-      ctx.globalAlpha = 0.22;
-      ctx.strokeStyle = palette.brassLight;
-      ctx.lineWidth = 1;
+      ctx.arc(0, 0, radius * ring, 0, TAU);
       ctx.stroke();
     }
 
-    ctx.globalAlpha = 0.5;
-    ctx.fillStyle = palette.brassLight;
-    for (let i = 0; i < 6; i++) {
-      const angle = i / 6 * TAU + 0.3;
-      ctx.beginPath();
-      ctx.arc(Math.cos(angle) * radius * 0.62, Math.sin(angle) * radius * 0.62, Math.max(1.5, radius * 0.018), 0, TAU);
-      ctx.fill();
-    }
-
     ctx.globalAlpha = 1;
-    const hub = ctx.createRadialGradient(-radius * 0.05, -radius * 0.05, 0, 0, 0, radius * 0.22);
-    hub.addColorStop(0, palette.brassLight);
-    hub.addColorStop(1, palette.brassDark);
-    ctx.fillStyle = hub;
+    ctx.fillStyle = palette.brassDark;
     ctx.beginPath();
-    ctx.arc(0, 0, radius * 0.2, 0, TAU);
+    ctx.arc(0, 0, radius * 0.12, 0, TAU);
     ctx.fill();
-    ctx.globalAlpha = 0.6;
-    ctx.strokeStyle = palette.brassLight;
-    ctx.lineWidth = 1;
+    ctx.fillStyle = palette.brass;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius * 0.085, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = palette.brassDark;
+    ctx.lineWidth = Math.max(1, radius * 0.018);
+    ctx.beginPath();
+    ctx.moveTo(-radius * 0.055, 0);
+    ctx.lineTo(radius * 0.055, 0);
     ctx.stroke();
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = 'rgba(6, 10, 16, 0.75)';
-    ctx.beginPath();
-    ctx.arc(0, 0, radius * 0.075, 0, TAU);
-    ctx.fill();
 
     return canvas;
   }
@@ -163,11 +151,13 @@ export class GearSystem {
       let previousSpeed = 0;
 
       for (let j = 0; j < layout.radii.length && placed < count; j++) {
-        const radius = Math.min(min * layout.radii[j], 300);
+        const radius = Math.min(min * layout.radii[j] * 0.85, 255);
+        const previous = j > 0 ? this.gears[this.gears.length - 1] : undefined;
+        const spacing = previousRadius + radius + 3;
         if (j > 0) {
           const angle = layout.angle + Math.sin(j * 1.7 + i) * 0.18;
-          x += (previousRadius + radius) * Math.cos(angle);
-          y += (previousRadius + radius) * Math.sin(angle);
+          x += spacing * Math.cos(angle);
+          y += spacing * Math.sin(angle);
         }
         const speed = j === 0
           ? (i % 2 === 0 ? 1 : -1) * 0.16 * (0.17 / layout.radii[0])
@@ -180,6 +170,17 @@ export class GearSystem {
           const scale = clearance / distance;
           x = width * 0.5 + dx * scale;
           y = height * 0.5 + dy * scale;
+        }
+        if (previous && Math.hypot(x - previous.x, y - previous.y) < spacing) {
+          // Continue outward along the clearance ray until the wheel clears its neighbor.
+          const ux = dx / distance;
+          const uy = dy / distance;
+          const ox = x - previous.x;
+          const oy = y - previous.y;
+          const along = ox * ux + oy * uy;
+          const push = Math.sqrt(along * along + spacing * spacing - ox * ox - oy * oy) - along;
+          x += ux * push;
+          y += uy * push;
         }
         this.gears.push({
           x,
@@ -210,7 +211,7 @@ export class GearSystem {
     const energy = settings.audioReactive && audio.hasAudio ? audio.overall : 0;
     const beat = settings.audioReactive && audio.hasAudio ? audio.beatPulse : 0;
     ctx.save();
-    ctx.globalAlpha = clamp(0.76 + energy * 0.16 + beat * 0.1, 0, 1);
+    ctx.globalAlpha = clamp(0.64 + energy * 0.16 + beat * 0.1, 0, 1);
     for (const gear of this.gears) {
       ctx.save();
       ctx.translate(gear.x, gear.y);
