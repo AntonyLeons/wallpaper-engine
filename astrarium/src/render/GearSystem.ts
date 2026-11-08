@@ -6,7 +6,7 @@ import { clamp, TAU } from './math';
 interface Gear {
   x: number;
   y: number;
-  r: number;
+  teeth: number;
   phase: number;
   speed: number;
   sprite: HTMLCanvasElement;
@@ -33,7 +33,8 @@ export class GearSystem {
   private sprites = new Map<string, HTMLCanvasElement>();
   private layoutKey = '';
 
-  private buildSprite(radius: number, palette: PresetPalette): HTMLCanvasElement {
+  private buildSprite(teeth: number, toothUnit: number, palette: PresetPalette): HTMLCanvasElement {
+    const radius = (teeth + 0.68) * toothUnit;
     const size = Math.ceil(2 * (radius + 10));
     const canvas = document.createElement('canvas');
     canvas.width = size;
@@ -42,8 +43,7 @@ export class GearSystem {
     if (!ctx) return canvas;
     ctx.translate(size / 2, size / 2);
 
-    const teeth = Math.max(12, Math.round(radius / 5));
-    const rootRadius = radius * 0.94;
+    const rootRadius = (teeth - 0.88) * toothUnit;
     const pitch = TAU / teeth;
     const outline = new Path2D();
     outline.moveTo(rootRadius, 0);
@@ -81,7 +81,7 @@ export class GearSystem {
     metal.addColorStop(1, palette.brassDark);
     ctx.fillStyle = palette.brassDark;
     ctx.save();
-    ctx.translate(1, Math.max(1, radius * 0.018));
+    ctx.translate(toothUnit * 0.12, toothUnit * 0.12);
     ctx.fill(wheel, 'evenodd');
     ctx.restore();
     ctx.fillStyle = metal;
@@ -118,11 +118,11 @@ export class GearSystem {
     return canvas;
   }
 
-  private getSprite(radius: number, preset: string, palette: PresetPalette): HTMLCanvasElement {
-    const key = `${Math.round(radius)}_${preset}`;
+  private getSprite(teeth: number, toothUnit: number, palette: PresetPalette): HTMLCanvasElement {
+    const key = String(teeth);
     let sprite = this.sprites.get(key);
     if (!sprite) {
-      sprite = this.buildSprite(radius, palette);
+      sprite = this.buildSprite(teeth, toothUnit, palette);
       this.sprites.set(key, sprite);
     }
     return sprite;
@@ -140,6 +140,7 @@ export class GearSystem {
     const palette = PRESET_PALETTES[settings.preset];
     const min = Math.min(width, height);
     const centerRadius = Math.min(min * 0.34, 620);
+    const toothUnit = Math.min(min / 240, 8);
     const count = Math.min(settings.gearCount, 12);
     let placed = 0;
 
@@ -147,51 +148,52 @@ export class GearSystem {
       const layout = GEAR_LAYOUT[i];
       let x = layout.ax * width;
       let y = layout.ay * height;
-      let previousRadius = 0;
-      let previousSpeed = 0;
+      let previous: Gear | undefined;
 
-      for (let j = 0; j < layout.radii.length && placed < count; j++) {
-        const radius = Math.min(min * layout.radii[j] * 0.85, 255);
-        const previous = j > 0 ? this.gears[this.gears.length - 1] : undefined;
-        const spacing = previousRadius + radius + 3;
-        if (j > 0) {
-          const angle = layout.angle + Math.sin(j * 1.7 + i) * 0.18;
-          x += spacing * Math.cos(angle);
-          y += spacing * Math.sin(angle);
+      for (const proportion of layout.radii) {
+        if (placed >= count) break;
+        const radius = Math.min(min * proportion * 0.85, 255);
+        const teeth = Math.max(12, Math.round(radius / toothUnit));
+        const pitchRadius = teeth * toothUnit;
+        const clearance = centerRadius + pitchRadius * 0.85 + 14;
+        let phase = phases[placed] ?? placed * 0.7;
+        let speed = (i % 2 === 0 ? 1 : -1) * 0.16 * (0.17 / layout.radii[0]);
+
+        if (previous) {
+          const spacing = (previous.teeth + teeth) * toothUnit;
+          let bestCost = Infinity;
+          let meshAngle = layout.angle;
+          // Sweep around the parent at a fixed pitch distance. Prefer visible
+          // positions clear of the dial and all wheels outside this pair.
+          for (let step = -36; step < 36; step++) {
+            const angle = layout.angle + step * TAU / 72;
+            const cx = previous.x + Math.cos(angle) * spacing;
+            const cy = previous.y + Math.sin(angle) * spacing;
+            const dialOverlap = Math.max(0, clearance - Math.hypot(cx - width / 2, cy - height / 2));
+            const outside = Math.max(0, -cx, cx - width, -cy, cy - height);
+            let overlap = 0;
+            for (const other of this.gears) {
+              if (other === previous) continue;
+              const gap = (other.teeth + teeth + 1.5) * toothUnit;
+              overlap += Math.max(0, gap - Math.hypot(cx - other.x, cy - other.y));
+            }
+            const cost = Math.abs(step) + (dialOverlap + outside * 2 + overlap * 4) * 8 / toothUnit;
+            if (cost < bestCost) {
+              bestCost = cost;
+              meshAngle = angle;
+              x = cx;
+              y = cy;
+            }
+          }
+          // The facing tooth patterns must sum to half a pitch: tooth meets gap.
+          const parentContact = (meshAngle - previous.phase) * previous.teeth;
+          phase = meshAngle + Math.PI - (Math.PI - parentContact) / teeth;
+          speed = -previous.speed * previous.teeth / teeth;
         }
-        const speed = j === 0
-          ? (i % 2 === 0 ? 1 : -1) * 0.16 * (0.17 / layout.radii[0])
-          : -previousSpeed * (previousRadius / radius);
-        const dx = x - width * 0.5;
-        const dy = y - height * 0.5;
-        const distance = Math.hypot(dx, dy) || 1;
-        const clearance = centerRadius + radius * 0.85 + 14;
-        if (distance < clearance) {
-          const scale = clearance / distance;
-          x = width * 0.5 + dx * scale;
-          y = height * 0.5 + dy * scale;
-        }
-        if (previous && Math.hypot(x - previous.x, y - previous.y) < spacing) {
-          // Continue outward along the clearance ray until the wheel clears its neighbor.
-          const ux = dx / distance;
-          const uy = dy / distance;
-          const ox = x - previous.x;
-          const oy = y - previous.y;
-          const along = ox * ux + oy * uy;
-          const push = Math.sqrt(along * along + spacing * spacing - ox * ox - oy * oy) - along;
-          x += ux * push;
-          y += uy * push;
-        }
-        this.gears.push({
-          x,
-          y,
-          r: radius,
-          phase: phases[placed] ?? placed * 0.7,
-          speed,
-          sprite: this.getSprite(radius, settings.preset, palette),
-        });
-        previousRadius = radius;
-        previousSpeed = speed;
+
+        const gear = { x, y, teeth, phase, speed, sprite: this.getSprite(teeth, toothUnit, palette) };
+        this.gears.push(gear);
+        previous = gear;
         placed++;
       }
     }
