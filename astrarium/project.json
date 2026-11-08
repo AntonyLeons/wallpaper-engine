@@ -112,10 +112,11 @@
         "value": 10
       },
       "gearcount": {
+        "condition": "showgears",
         "index": 3,
         "max": 12,
         "min": 0,
-        "order": 103,
+        "order": 120,
         "step": 1,
         "text": "Clockwork Gears",
         "type": "slider",
@@ -200,6 +201,13 @@
         "type": "bool",
         "value": true
       },
+      "showgears": {
+        "index": 19,
+        "order": 119,
+        "text": "Show Gears",
+        "type": "bool",
+        "value": true
+      },
       "showseconds": {
         "index": 13,
         "order": 113,
@@ -252,7 +260,7 @@
     },
     "supportsaudioprocessing": true
   },
-  "preview": "preview.jpg",
+  "preview": "preview.gif",
   "ratingsex": "none",
   "ratingviolence": "none",
   "resolution": "3840x2160",

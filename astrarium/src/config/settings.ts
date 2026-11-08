@@ -93,6 +93,7 @@ export interface AppSettings {
   orbitSpeed: number;
   planetCount: number;
   gearCount: number;
+  showGears: boolean;
   starDensity: number;
   audioReactive: boolean;
   audioSensitivity: number;
@@ -116,6 +117,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   orbitSpeed: 1,
   planetCount: 6,
   gearCount: 6,
+  showGears: true,
   starDensity: 140,
   audioReactive: true,
   audioSensitivity: 1.5,
@@ -194,6 +196,9 @@ class SettingsManager {
       if (Number.isFinite(value)) this.currentSettings.gearCount = clamp(Math.round(value), 0, 12);
     }
 
+    const showGears = params.get('showgears');
+    if (showGears !== null) this.currentSettings.showGears = showGears !== 'false' && showGears !== '0';
+
     const stars = params.get('stars') || params.get('stardensity');
     if (stars !== null) {
       const value = Number(stars);
@@ -264,6 +269,11 @@ class SettingsManager {
         this.currentSettings.planetCount = clamp(Math.round(value), 0, 9);
         changed = true;
       }
+    }
+
+    if (typeof properties.showgears?.value === 'boolean') {
+      this.currentSettings.showGears = properties.showgears.value;
+      changed = true;
     }
 
     if (properties.gearcount?.value !== undefined) {

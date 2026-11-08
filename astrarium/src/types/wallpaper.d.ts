@@ -7,6 +7,7 @@ export interface WallpaperUserProperties {
   orbitspeed?: WallpaperProperty;
   planetcount?: WallpaperProperty;
   gearcount?: WallpaperProperty;
+  showgears?: WallpaperProperty;
   stardensity?: WallpaperProperty;
   audioreactive?: WallpaperProperty;
   audiosensitivity?: WallpaperProperty;

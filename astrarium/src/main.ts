@@ -169,10 +169,12 @@ class Application {
     const height = window.innerHeight;
     const audioMetrics = this.audioAnalyzer.update(deltaTimeSec, settings.audioSensitivity);
 
-    this.gearSystem.update(deltaTimeSec, width, height, settings, audioMetrics);
     this.orreryRenderer.update(deltaTimeSec, width, height, settings, audioMetrics, this.pointer);
     this.skyRenderer.render(this.ctx, width, height, deltaTimeSec, settings, audioMetrics, this.pointer);
-    this.gearSystem.render(this.ctx, settings, audioMetrics);
+    if (settings.showGears) {
+      this.gearSystem.update(deltaTimeSec, width, height, settings, audioMetrics);
+      this.gearSystem.render(this.ctx, settings, audioMetrics);
+    }
     this.orreryRenderer.render(this.ctx, settings, audioMetrics);
     this.clockOverlay.update(settings);
 
